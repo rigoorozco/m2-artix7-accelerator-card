@@ -1,0 +1,5 @@
+**/*.log
+**/*.jou
+**/*.rpt
+**/temp_project/
+**/hd_visual/
