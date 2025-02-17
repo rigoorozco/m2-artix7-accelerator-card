@@ -20,12 +20,18 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2021.1
+set scripts_vivado_version 2024.2
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
    puts ""
-   catch {common::send_gid_msg -ssname BD::TCL -id 2041 -severity "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
+   if { [string compare $scripts_vivado_version $current_vivado_version] > 0 } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2042 -severity "ERROR" " This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Sourcing the script failed since it was created with a future version of Vivado."}
+
+   } else {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2041 -severity "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
+
+   }
 
    return 1
 }
@@ -218,7 +224,7 @@ proc create_root_design { parentCell } {
    CONFIG.HAS_RRESP {1} \
    CONFIG.HAS_WSTRB {1} \
    CONFIG.ID_WIDTH {0} \
-   CONFIG.MAX_BURST_LENGTH {256} \
+   CONFIG.MAX_BURST_LENGTH {1} \
    CONFIG.NUM_READ_OUTSTANDING {2} \
    CONFIG.NUM_READ_THREADS {1} \
    CONFIG.NUM_WRITE_OUTSTANDING {2} \
@@ -227,7 +233,7 @@ proc create_root_design { parentCell } {
    CONFIG.READ_WRITE_MODE {READ_WRITE} \
    CONFIG.RUSER_BITS_PER_BYTE {0} \
    CONFIG.RUSER_WIDTH {0} \
-   CONFIG.SUPPORTS_NARROW_BURST {1} \
+   CONFIG.SUPPORTS_NARROW_BURST {0} \
    CONFIG.WUSER_BITS_PER_BYTE {0} \
    CONFIG.WUSER_WIDTH {0} \
    ] $rp_S_AXI
@@ -243,36 +249,32 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_datamover_0, and set properties
   set axi_datamover_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_datamover:5.1 axi_datamover_0 ]
-  set_property -dict [ list \
-   CONFIG.c_dummy {1} \
-   CONFIG.c_enable_s2mm {0} \
-   CONFIG.c_include_s2mm {Omit} \
-   CONFIG.c_include_s2mm_stsfifo {false} \
-   CONFIG.c_m_axi_s2mm_awid {1} \
-   CONFIG.c_s2mm_addr_pipe_depth {3} \
-   CONFIG.c_s2mm_include_sf {false} \
- ] $axi_datamover_0
+  set_property -dict [list \
+    CONFIG.c_dummy {1} \
+    CONFIG.c_enable_s2mm {0} \
+  ] $axi_datamover_0
+
 
   # Create instance: axi_datamover_1, and set properties
   set axi_datamover_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_datamover:5.1 axi_datamover_1 ]
-  set_property -dict [ list \
-   CONFIG.c_dummy {1} \
-   CONFIG.c_enable_mm2s {0} \
-   CONFIG.c_enable_s2mm {1} \
-   CONFIG.c_include_s2mm {Full} \
-   CONFIG.c_include_s2mm_stsfifo {true} \
-   CONFIG.c_m_axi_s2mm_awid {1} \
-   CONFIG.c_s2mm_addr_pipe_depth {3} \
- ] $axi_datamover_1
+  set_property -dict [list \
+    CONFIG.c_dummy {1} \
+    CONFIG.c_enable_mm2s {0} \
+    CONFIG.c_enable_s2mm {1} \
+    CONFIG.c_include_s2mm {Full} \
+    CONFIG.c_include_s2mm_stsfifo {true} \
+    CONFIG.c_m_axi_s2mm_awid {1} \
+    CONFIG.c_s2mm_addr_pipe_depth {3} \
+  ] $axi_datamover_1
+
 
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
 
   # Create instance: axi_interconnect_0, and set properties
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
-  set_property -dict [ list \
-   CONFIG.NUM_MI {1} \
- ] $axi_interconnect_0
+  set_property CONFIG.NUM_MI {1} $axi_interconnect_0
+
 
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
@@ -285,15 +287,31 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_ports rp_M_AXI] [get_bd_intf_pins smartconnect_0/M00_AXI]
 
   # Create port connections
-  connect_bd_net -net rp_clk_1 [get_bd_ports rp_clk] [get_bd_pins axi_datamover_0/m_axi_mm2s_aclk] [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aclk] [get_bd_pins axi_datamover_1/m_axi_s2mm_aclk] [get_bd_pins axi_datamover_1/m_axis_s2mm_cmdsts_awclk] [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins smartconnect_0/aclk]
-  connect_bd_net -net rp_resetn_1 [get_bd_ports rp_resetn] [get_bd_pins axi_datamover_0/m_axi_mm2s_aresetn] [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aresetn] [get_bd_pins axi_datamover_1/m_axi_s2mm_aresetn] [get_bd_pins axi_datamover_1/m_axis_s2mm_cmdsts_aresetn] [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins smartconnect_0/aresetn]
+  connect_bd_net -net rp_clk_1  [get_bd_ports rp_clk] \
+  [get_bd_pins axi_datamover_0/m_axi_mm2s_aclk] \
+  [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aclk] \
+  [get_bd_pins axi_datamover_1/m_axi_s2mm_aclk] \
+  [get_bd_pins axi_datamover_1/m_axis_s2mm_cmdsts_awclk] \
+  [get_bd_pins axi_gpio_0/s_axi_aclk] \
+  [get_bd_pins axi_interconnect_0/ACLK] \
+  [get_bd_pins axi_interconnect_0/S00_ACLK] \
+  [get_bd_pins axi_interconnect_0/M00_ACLK] \
+  [get_bd_pins smartconnect_0/aclk]
+  connect_bd_net -net rp_resetn_1  [get_bd_ports rp_resetn] \
+  [get_bd_pins axi_datamover_0/m_axi_mm2s_aresetn] \
+  [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aresetn] \
+  [get_bd_pins axi_datamover_1/m_axi_s2mm_aresetn] \
+  [get_bd_pins axi_datamover_1/m_axis_s2mm_cmdsts_aresetn] \
+  [get_bd_pins axi_gpio_0/s_axi_aresetn] \
+  [get_bd_pins axi_interconnect_0/ARESETN] \
+  [get_bd_pins axi_interconnect_0/S00_ARESETN] \
+  [get_bd_pins axi_interconnect_0/M00_ARESETN] \
+  [get_bd_pins smartconnect_0/aresetn]
 
   # Create address segments
-#   assign_bd_address -external -dict [list offset 0x00000000 range 0x00002000 offset 0x80000000 range 0x08000000] -target_address_space [get_bd_addr_spaces axi_datamover_0/Data_MM2S] [get_bd_addr_segs rp_M_AXI/Reg] -force
-#   assign_bd_address -external -dict [list offset 0x00000000 range 0x00002000 offset 0x80000000 range 0x08000000] -target_address_space [get_bd_addr_spaces axi_datamover_1/Data_S2MM] [get_bd_addr_segs rp_M_AXI/Reg] -force
-#   assign_bd_address -offset 0x41000000 -range 0x01000000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
-
-#   set_property USAGE memory [get_bd_addr_segs rp_M_AXI/Reg]
+  assign_bd_address -offset 0x80000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces axi_datamover_0/Data_MM2S] [get_bd_addr_segs rp_M_AXI/Reg] -force
+  assign_bd_address -offset 0x80000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces axi_datamover_1/Data_S2MM] [get_bd_addr_segs rp_M_AXI/Reg] -force
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
 
 
   # Restore current instance
