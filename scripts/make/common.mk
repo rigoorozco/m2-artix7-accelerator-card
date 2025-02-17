@@ -17,6 +17,6 @@ build: vivado
 
 clean:
 	@echo "Cleaning project directory..."
-	@rm -rf temp_project *.jou *.log
+	@rm -rf temp_project *.jou *.log *.rpt
 
 all: build
