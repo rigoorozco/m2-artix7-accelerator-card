@@ -2,7 +2,8 @@
 # Common Makefile
 #
 
-PROJECT_ONLY:=0
+# BUILD_STEP: PROJECT=0, SYNTH=1, IMPL=2
+BUILD_STEP:=2
 
 default: all
 
@@ -12,11 +13,19 @@ ifeq (,$(shell which vivado))
 endif
 
 build: vivado
-	@echo "Launching Vivado build scripts..."
-	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs ${PROJECT_ONLY}
+	@echo "Launching Vivado build script..."
+	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs ${BUILD_STEP}
+
+synth_partitions:
+	@echo "Creating partition synth checkpoints..."
+	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs 1
+
+impl_partitions:
+	@echo "Building partial bitstreams..."
+	@vivado -mode batch -source ../../scripts/tcl/build_partitions.tcl
 
 clean:
 	@echo "Cleaning project directory..."
-	@rm -rf temp_project *.jou *.log *.rpt
+	@rm -rf temp_project build partial *.jou *.log *.rpt
 
 all: build
