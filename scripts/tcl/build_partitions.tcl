@@ -40,6 +40,6 @@ for {set p 0} {${p} < ${num_partitions}} {incr p} {
     ${current_directory}/partial/config_${inst}_routed.dcp
 
     # Save bitstream and close
-    write_bitstream ${current_directory}/partial/${proj_name}
+    write_bitstream -force ${current_directory}/partial/${proj_name}
     close_project
 }
