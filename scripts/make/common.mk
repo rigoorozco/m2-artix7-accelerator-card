@@ -16,16 +16,16 @@ build: vivado
 	@echo "Launching Vivado build script..."
 	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs ${BUILD_STEP}
 
-synth_partitions:
+synth_partitions: vivado
 	@echo "Creating partition synth checkpoints..."
 	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs 1
 
-impl_partitions:
+impl_partitions: vivado
 	@echo "Building partial bitstreams..."
 	@vivado -mode batch -source ../../scripts/tcl/build_partitions.tcl
 
 clean:
 	@echo "Cleaning project directory..."
-	@rm -rf temp_project build partial *.jou *.log *.rpt
+	@rm -rf build hd_visual *.jou *.log *.rpt clockInfo.txt
 
 all: build

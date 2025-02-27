@@ -2,8 +2,5 @@
 **/*.jou
 **/*.rpt
 **/clockInfo.txt
-**/temp_project/
-**/hd_visual/
 **/build/
-**/partial/
-
+**/hd_visual/
