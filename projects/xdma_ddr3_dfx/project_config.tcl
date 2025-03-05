@@ -12,6 +12,7 @@ set block_designs {
 
 set constraints {
     xdma_ddr3_dfx_pins.xdc \
+    xdma_ddr3_dfx_early.xdc \
     xdma_ddr3_dfx_partitions.xdc \
 }
 
