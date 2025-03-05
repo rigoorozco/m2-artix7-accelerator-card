@@ -11,4 +11,5 @@ set block_designs {
 
 set constraints {
     xdma_pins.xdc \
+    xdma_early.xdc \
 }
