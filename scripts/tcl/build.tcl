@@ -2,10 +2,11 @@
 # Typical usage: vivado -mode batch -source build.tcl -tclargs ${BUILD_STEP}
 #
 
-if { $argc != 1 } {
+if { $argc != 2 } {
     puts "Invalid argument count. Please try again."
 } else {
     set BUILD_STEP [expr [lindex $argv 0]]
+    set NUM_PROC [expr [lindex $argv 1]]
 }
 
 # Store working directories
@@ -58,7 +59,7 @@ update_compile_order -fileset sources_1
 
 if { ${BUILD_STEP} > 0 } {
     # Launch Synthesis
-    launch_runs synth_1 -jobs 2
+    launch_runs synth_1 -jobs ${NUM_PROC}
     wait_on_run synth_1
     open_run synth_1 -name synth_1
 
@@ -92,7 +93,7 @@ if { ${BUILD_STEP} > 0 } {
         set_property PROCESSING_ORDER NORMAL [get_files -all ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/ip/${design_name}_xdma_0_0/ip_0/source/${design_name}_xdma_0_0_pcie2_ip-PCIE_X0Y0.xdc]
 
         # Launch Implementation
-        launch_runs impl_1 -to_step write_bitstream -jobs 2
+        launch_runs impl_1 -to_step write_bitstream -jobs ${NUM_PROC}
         wait_on_run impl_1
 
         # Generate a timing and power reports and write to disk

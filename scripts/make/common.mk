@@ -14,11 +14,11 @@ endif
 
 build: vivado
 	@echo "Launching Vivado build script..."
-	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs ${BUILD_STEP}
+	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs ${BUILD_STEP} $(shell nproc)
 
 synth_partitions: vivado
 	@echo "Creating partition synth checkpoints..."
-	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs 1
+	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs 1 $(shell nproc)
 
 impl_partitions: vivado
 	@echo "Building partial bitstreams..."
