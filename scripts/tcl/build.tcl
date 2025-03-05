@@ -43,6 +43,11 @@ add_files -quiet ${hdl_sources}
 # Add pin constraints to the project
 foreach constr ${constraints} {
     add_files -fileset constrs_1 ${curr_directory}/${constr}
+
+    # Add specific settings for early constraints file
+    if {[string match  "*_early.xdc" "${constr}"]} {
+        set_property PROCESSING_ORDER EARLY [get_files -all ${curr_directory}/${constr}]
+    }
 }
 
 # Now import/copy the files into the project
@@ -83,6 +88,9 @@ if { ${BUILD_STEP} > 0 } {
     }
 
     if { ${BUILD_STEP} > 1 } {
+        # Move PCIe IP constraint file back so ours gets applied first
+        set_property PROCESSING_ORDER NORMAL [get_files -all ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/ip/${design_name}_xdma_0_0/ip_0/source/${design_name}_xdma_0_0_pcie2_ip-PCIE_X0Y0.xdc]
+
         # Launch Implementation
         launch_runs impl_1 -to_step write_bitstream -jobs 2
         wait_on_run impl_1
