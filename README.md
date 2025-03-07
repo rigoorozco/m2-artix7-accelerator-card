@@ -123,6 +123,12 @@ Once done, it runs a check against the originally created checkpoint for compati
 
 ## Other Notes
 
+### Winbond Configuration Memory
+
+Vivado doesn't recognize by default the configuration memory used in this board: w25q128bv.
+
+Fortunately, this has an easy fix. Take a look at `docs/winbond-flash-notes.txt` for more details.
+
 ### Non-standard PCIe Lanes
 The board was designed using a reversed lane order, opposite of what Xilinx recommends. This is talked about on Section 2.5 (page 30) of the user guide.
 

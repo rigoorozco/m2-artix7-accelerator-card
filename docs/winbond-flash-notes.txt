@@ -1,0 +1,8 @@
+In order for Vivado to read and write to the configuration memory, one of the two lines below must be added to the following file:
+/opt/Xilinx/Vivado/20XX.X/data/xicom/xicom_cfgmem_part_table.csv
+
+Vivado versions before 2023:
+823,0,w25q128bv-spi-x1_x2_x4,- xa7a100t xa7a15t xa7a35t xa7a50t xa7a75t xc7a100t xc7a100ti xc7a100tl xc7a12t xc7a12ti xc7a12tl xc7a15t xc7a15ti xc7a15tl xc7a200t xc7a200ti xc7a200tl xc7a25t xc7a25ti xc7a25tl xc7a35t xc7a35ti xc7a35tl xc7a50t xc7a50ti xc7a50tl xc7a75t xc7a75ti xc7a75tl xq7a100t xq7a200t xq7a50t xc7k160t xc7k160ti xc7k160tl xc7k325t xc7k325ti xc7k325tl xc7k355t xc7k355ti xc7k355tl xc7k410t xc7k410ti xc7k410tl xc7k420t xc7k420ti xc7k420tl xc7k480t xc7k480ti xc7k480tl xc7k70t xc7k70tl xq7k325t xq7k325tl xq7k410t xq7k410tl xcku025 xcku035 xcku040 xcku060 xcku085 xcku095 xcku115 xqku040 xqku060 xqku095 xqku115 xc7s100 xc7s15 xc7s25 xc7s50 xc7s6 xc7s75 xcvu065 xcvu080 xcvu095 xcvu125 xcvu160 xcvu190 xcvu440,w25q128bv,spi,128,x1_x2_x4,,Winbond,,1,w25q128bv,w25q
+
+Vivado versions 2023 and after:
+1005,0,w25q128bv-spi-x1_x2_x4,- artix7 artixuplus kintex7 kintexu virtex7 kintexuplus,w25q128bv,spi,128,x1_x2_x4,,Winbond,,1,w25q128bv,w25q
