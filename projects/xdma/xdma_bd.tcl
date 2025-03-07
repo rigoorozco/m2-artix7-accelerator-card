@@ -127,6 +127,7 @@ xilinx.com:ip:axi_bram_ctrl:4.1\
 xilinx.com:ip:blk_mem_gen:8.4\
 xilinx.com:ip:axi_gpio:2.0\
 xilinx.com:ip:smartconnect:1.0\
+xilinx.com:ip:xlconstant:1.1\
 xilinx.com:ip:util_ds_buf:2.2\
 xilinx.com:ip:xdma:4.1\
 "
@@ -224,8 +225,10 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
   set_property -dict [ list \
+   CONFIG.C_ALL_INPUTS_2 {1} \
    CONFIG.C_ALL_OUTPUTS {1} \
    CONFIG.C_GPIO_WIDTH {3} \
+   CONFIG.C_IS_DUAL {1} \
  ] $axi_gpio_0
 
   # Create instance: axi_smc, and set properties
@@ -233,6 +236,13 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.NUM_SI {1} \
  ] $axi_smc
+
+  # Create instance: deadbeef_const, and set properties
+  set deadbeef_const [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 deadbeef_const ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0xdeadbeef} \
+   CONFIG.CONST_WIDTH {32} \
+ ] $deadbeef_const
 
   # Create instance: util_ds_buf, and set properties
   set util_ds_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 util_ds_buf ]
@@ -247,11 +257,15 @@ proc create_root_design { parentCell } {
    CONFIG.PF0_SRIOV_VF_DEVICE_ID {A034} \
    CONFIG.PF2_DEVICE_ID_mqdma {9224} \
    CONFIG.PF3_DEVICE_ID_mqdma {9324} \
+   CONFIG.axi_bypass_64bit_en {false} \
    CONFIG.axi_data_width {128_bit} \
+   CONFIG.axil_master_64bit_en {false} \
    CONFIG.axilite_master_en {true} \
+   CONFIG.axist_bypass_en {false} \
+   CONFIG.axist_bypass_size {1} \
    CONFIG.axisten_freq {125} \
    CONFIG.cfg_mgmt_if {false} \
-   CONFIG.pciebar2axibar_axil_master {0x40000000} \
+   CONFIG.pciebar2axibar_axil_master {0x00000000} \
    CONFIG.pf0_device_id {7024} \
    CONFIG.pf0_interrupt_pin {NONE} \
    CONFIG.pf0_msix_cap_pba_bir {BAR_3:2} \
@@ -287,6 +301,7 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pcie_7x_mgt_rtl_0] [get_bd_intf_pins xdma_0/pcie_mgt]
 
   # Create port connections
+  connect_bd_net -net deadbeef_const_dout [get_bd_pins axi_gpio_0/gpio2_io_i] [get_bd_pins deadbeef_const/dout]
   connect_bd_net -net reset_rtl_0_1 [get_bd_ports reset_rtl_0] [get_bd_pins xdma_0/sys_rst_n]
   connect_bd_net -net util_ds_buf_IBUF_OUT [get_bd_pins util_ds_buf/IBUF_OUT] [get_bd_pins xdma_0/sys_clk]
   connect_bd_net -net xdma_0_axi_aclk [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_smc/aclk] [get_bd_pins xdma_0/axi_aclk] [get_bd_pins xdma_0_axi_periph/ACLK] [get_bd_pins xdma_0_axi_periph/M00_ACLK] [get_bd_pins xdma_0_axi_periph/S00_ACLK]
@@ -294,7 +309,7 @@ proc create_root_design { parentCell } {
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI] [get_bd_addr_segs axi_bram_ctrl_0/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
 
 
   # Restore current instance
