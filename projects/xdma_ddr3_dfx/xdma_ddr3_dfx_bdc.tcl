@@ -135,6 +135,7 @@ xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:axi_bram_ctrl:4.1\
 xilinx.com:ip:blk_mem_gen:8.4\
 xilinx.com:ip:axi_register_slice:2.1\
+xilinx.com:ip:xlconstant:1.1\
 "
 
    set list_ips_missing ""
@@ -274,6 +275,8 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
+  set_property CONFIG.C_ALL_INPUTS {1} $axi_gpio_0
+
 
   # Create instance: axi_interconnect_0, and set properties
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
@@ -364,6 +367,14 @@ proc create_root_design { parentCell } {
   ] $axi_register_slice_1
 
 
+  # Create instance: beefcafe_const, and set properties
+  set beefcafe_const [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 beefcafe_const ]
+  set_property -dict [list \
+    CONFIG.CONST_VAL {0xbeefcafe} \
+    CONFIG.CONST_WIDTH {32} \
+  ] $beefcafe_const
+
+
   # Create interface connections
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins axi_bram_ctrl_0_bram/BRAM_PORTA] [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTA]
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTB [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTB] [get_bd_intf_pins axi_bram_ctrl_0_bram/BRAM_PORTB]
@@ -377,6 +388,8 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins axi_register_slice_0/S_AXI] [get_bd_intf_pins smartconnect_0/M00_AXI]
 
   # Create port connections
+  connect_bd_net -net beefcafe_const_dout  [get_bd_pins beefcafe_const/dout] \
+  [get_bd_pins axi_gpio_0/gpio_io_i]
   connect_bd_net -net rp_clk_1  [get_bd_ports rp_clk] \
   [get_bd_pins axi_datamover_0/m_axi_mm2s_aclk] \
   [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aclk] \
@@ -407,10 +420,10 @@ proc create_root_design { parentCell } {
   [get_bd_pins axi_register_slice_1/aresetn]
 
   # Create address segments
-  assign_bd_address -offset 0x80000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces axi_datamover_0/Data_MM2S] [get_bd_addr_segs rp_M_AXI/Reg] -force
-  assign_bd_address -offset 0x80000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces axi_datamover_1/Data_S2MM] [get_bd_addr_segs rp_M_AXI/Reg] -force
-  assign_bd_address -offset 0x41000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_bram_ctrl_0/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x41002000 -range 0x00002000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi_datamover_0/Data_MM2S] [get_bd_addr_segs rp_M_AXI/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi_datamover_1/Data_S2MM] [get_bd_addr_segs rp_M_AXI/Reg] -force
+  assign_bd_address -offset 0x40010000 -range 0x00002000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_bram_ctrl_0/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x40012000 -range 0x00001000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
 
 
   # Restore current instance
