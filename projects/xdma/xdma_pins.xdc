@@ -10,9 +10,9 @@ set_property BITSTREAM.CONFIG.SPI_FALL_EDGE Yes [current_design]
 set_property -dict {PACKAGE_PIN K22 IOSTANDARD LVCMOS33} [get_ports reset_rtl_0]
 
 #led*3 outpuy
-set_property -dict {PACKAGE_PIN AB7 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[2]]
-set_property -dict {PACKAGE_PIN AA6 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[1]]
-set_property -dict {PACKAGE_PIN AB6 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[0]]
+set_property -dict {PACKAGE_PIN AB21 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[2]]
+set_property -dict {PACKAGE_PIN AA20 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[1]]
+set_property -dict {PACKAGE_PIN AB20 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[0]]
 
 #pcie lanes
 set_property PACKAGE_PIN F10 [get_ports {diff_clock_rtl_0_clk_p[0]}]
