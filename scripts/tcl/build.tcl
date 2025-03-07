@@ -108,9 +108,8 @@ if { ${BUILD_STEP} > 0 } {
             file copy -force ${dcp} ${build_directory}/static/
         }
 
-        # Copy bistream(s) to build directory
-        foreach bit [glob ${proj_directory}/${proj_name}.runs/impl_1/*.bit] {
-            file copy -force ${bit} ${build_directory}/static/
-        }
+        # Save bitstream(s) and close
+        write_bitstream -bin_file -force ${build_directory}/static/${proj_name}
+        close_project
     }
 }
