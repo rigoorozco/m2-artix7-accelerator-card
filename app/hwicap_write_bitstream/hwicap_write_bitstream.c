@@ -18,25 +18,19 @@
 
 /************************** Constant Definitions *****************************/
 
-/*
- *  This is the size of the buffer in words which is written in this example.
- */
-#define TEST_WRITE_BUFFER_SIZE		4096
-
 /************************** Variable Definitions *****************************/
 
 /*
  * The following variables are used to read and write to the  HwIcap device, they
  * are global to avoid having large buffers on the stack.
  */
-uint32_t WriteBuffer[TEST_WRITE_BUFFER_SIZE];
 
-static XHwIcap  HwIcapInstance;	/* The instance of the HwIcap device */
+static XHwIcap HwIcapInstance;	/* The instance of the HwIcap device */
 
 /*****************************************************************************/
 /**
 *
-* Main function to call the HwIcap interrupt example.
+* Main function to write bitstream to HwIcap.
 *
 * @param    None
 *
@@ -152,8 +146,7 @@ int main(int argc, char **argv)
     /*
      * Write the the data to the device.
      */
-    status = XHwIcap_DeviceWrite(&HwIcapInstance, (uint32_t *) &buffer[0], TEST_WRITE_BUFFER_SIZE);
-
+    status = XHwIcap_DeviceWrite(&HwIcapInstance, (uint32_t *) &buffer[0], file_size_words);
     if (status != XST_SUCCESS) {
         printf("HWICAP device write failed!\r\n");
         return XST_FAILURE;
