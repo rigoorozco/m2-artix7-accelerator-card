@@ -1,8 +1,18 @@
 **/*.log
 **/*.jou
 **/*.rpt
+
 **/clockInfo.txt
 **/build/
 **/hd_visual/
+
+**/*.ko
+**/*.o
+**/*.cmd
+**/*.order
+**/*.mod
+**/*.mod.c
+**/Module.symvers
+
 app/hwicap_write_bitstream/hwicap_write_bitstream
 
