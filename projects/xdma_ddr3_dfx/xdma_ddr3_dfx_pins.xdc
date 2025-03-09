@@ -8,7 +8,6 @@ set_property BITSTREAM.CONFIG.SPI_FALL_EDGE Yes [current_design]
 
 # 50 MHz clock
 set_property -dict {PACKAGE_PIN Y18 IOSTANDARD LVCMOS33} [get_ports clk50]
-create_clock -period 20 [get_ports clk50]
 
 #led*3 outpuy
 set_property -dict {PACKAGE_PIN AB21 IOSTANDARD LVCMOS33} [get_ports gpio_rtl_0_tri_o[2]]
@@ -44,4 +43,4 @@ set_property PACKAGE_PIN F10 [get_ports {diff_clock_rtl_0_clk_p[0]}]
 set_property PACKAGE_PIN E10 [get_ports {diff_clock_rtl_0_clk_n[0]}]
 
 # PCIe reset_n input
-set_property -dict {PACKAGE_PIN K22 IOSTANDARD LVCMOS33 PULLUP TRUE} [get_ports reset_rtl_0]
+set_property -dict {PACKAGE_PIN K22 IOSTANDARD LVCMOS33} [get_ports reset_rtl_0]
