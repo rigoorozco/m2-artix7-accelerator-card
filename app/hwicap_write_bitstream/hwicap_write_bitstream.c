@@ -123,7 +123,7 @@ int main(int argc, char **argv)
         0,   /* Device ID of device */
         map, /* Register base address */
         32,  /* Width of ICAP */
-        0    /* IsLiteMode: 0 not present, 1 present */
+        1    /* IsLiteMode: 0 not present, 1 present */
     };
 
     /*
