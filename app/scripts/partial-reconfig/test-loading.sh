@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -e
+
 SCRIPT_DIR=$(dirname "$0")
 
 DFX_GPIO_CH2_REG=0x12008

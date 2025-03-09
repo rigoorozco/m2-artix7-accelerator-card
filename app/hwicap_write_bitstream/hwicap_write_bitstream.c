@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     uint32_t buffer[file_size_words];
     for (int i; i < file_size_words; i++) {
         if (fread(&buffer[i], sizeof(uint32_t), 1, file) != 1) {
-            printf("readin from bitstream file failed: %s.\n", strerror(errno));
+            printf("reading from bitstream file failed: %s.\n", strerror(errno));
             return -errno;
         }
     }
@@ -127,10 +127,11 @@ int main(int argc, char **argv)
     };
 
     /*
-     * Run the HwIcap Interrupt example.
+     * Run the HwIcap initialization.
      */
     status = XHwIcap_CfgInitialize(&HwIcapInstance, &ConfigPtr, ConfigPtr.BaseAddress);
     if (status != XST_SUCCESS) {
+        printf("HWICAP configuration failed!\r\n");
         return XST_FAILURE;
     }
 
@@ -139,6 +140,7 @@ int main(int argc, char **argv)
      */
     status = XHwIcap_SelfTest(&HwIcapInstance);
     if (status != XST_SUCCESS) {
+        printf("HWICAP self test failed!\r\n");
         return XST_FAILURE;
     }
     printf("Self test finished successfully!\n");

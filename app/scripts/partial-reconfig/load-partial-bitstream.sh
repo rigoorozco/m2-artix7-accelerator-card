@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -e
+
 # Check the number of arguments
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <bitstream>"
