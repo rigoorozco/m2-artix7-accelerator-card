@@ -58,7 +58,7 @@
 
 #define DESYNC_COMMAND_SIZE	7 /* Number of words in the Desync command */
 #define CAPTURE_COMMAND_SIZE	7 /* Number of words in the Capture command */
-#define READ_CFG_REG_COMMAND_SIZE 7 /* Num of words in Read Config command */
+#define READ_CFG_REG_COMMAND_SIZE 10 /* Num of words in Read Config command */
 
 /**************************** Type Definitions *******************************/
 
@@ -189,6 +189,9 @@ uint32_t XHwIcap_GetConfigReg(XHwIcap *InstancePtr, uint32_t ConfigReg, uint32_t
      * Create the data to be written to the ICAP.
      */
     FrameBuffer[Index++] = XHI_DUMMY_PACKET;
+    FrameBuffer[Index++] = XHI_BUS_WTH_PACKET;
+    FrameBuffer[Index++] = XHI_BUS_DET_PACKET;
+    FrameBuffer[Index++] = XHI_DUMMY_PACKET;
     FrameBuffer[Index++] = XHI_SYNC_PACKET;
     FrameBuffer[Index++] = XHI_NOOP_PACKET;
     FrameBuffer[Index++] = XHI_NOOP_PACKET;
@@ -232,6 +235,12 @@ uint32_t XHwIcap_GetConfigReg(XHwIcap *InstancePtr, uint32_t ConfigReg, uint32_t
      * and 7 series devices
      */
     XHwIcap_DeviceRead(InstancePtr, RegData, 1);
+
+    /*
+     * Write the DESYNC command to the device as described in
+     * table 6-1 in "7 Series FPGAs Configuration User Guide" (UG470)
+     */
+    XHwIcap_CommandDesync(InstancePtr);
 
     return XST_SUCCESS;
 }
