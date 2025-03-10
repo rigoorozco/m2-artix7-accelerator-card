@@ -142,11 +142,10 @@ xilinx.com:ip:mig_7series:4.2\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:util_ds_buf:2.2\
 xilinx.com:ip:xdma:4.1\
-xilinx.com:ip:xlconstant:1.1\
 xilinx.com:ip:clk_wiz:6.0\
 xilinx.com:ip:smartconnect:1.0\
-xilinx.com:ip:dfx_axi_shutdown_manager:1.0\
 xilinx.com:ip:xlconcat:2.1\
+xilinx.com:ip:dfx_axi_shutdown_manager:1.0\
 xilinx.com:ip:axi_register_slice:2.1\
 xilinx.com:ip:dfx_decoupler:1.0\
 "
@@ -607,6 +606,7 @@ proc create_root_design { parentCell } {
   set_property -dict [list \
     CONFIG.C_ALL_INPUTS_2 {1} \
     CONFIG.C_ALL_OUTPUTS {1} \
+    CONFIG.C_GPIO2_WIDTH {2} \
     CONFIG.C_GPIO_WIDTH {3} \
     CONFIG.C_IS_DUAL {1} \
   ] $axi_gpio_0
@@ -700,14 +700,6 @@ proc create_root_design { parentCell } {
   ] $xdma_0
 
 
-  # Create instance: deadbeef_const, and set properties
-  set deadbeef_const [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 deadbeef_const ]
-  set_property -dict [list \
-    CONFIG.CONST_VAL {0xdeadbeef} \
-    CONFIG.CONST_WIDTH {32} \
-  ] $deadbeef_const
-
-
   # Create instance: clk200_clk_wiz, and set properties
   set clk200_clk_wiz [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk200_clk_wiz ]
   set_property -dict [list \
@@ -731,6 +723,9 @@ proc create_root_design { parentCell } {
   ] $xdma_axi_lite_smc
 
 
+  # Create instance: mig7_status_concat, and set properties
+  set mig7_status_concat [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 mig7_status_concat ]
+
   # Create interface connections
   connect_bd_intf_net -intf_net axi_gpio_0_GPIO [get_bd_intf_ports gpio_rtl_0] [get_bd_intf_pins axi_gpio_0/GPIO]
   connect_bd_intf_net -intf_net dfx_partition_rp_M_AXI [get_bd_intf_pins dfx_partition/rp_M_AXI] [get_bd_intf_pins dfx_socket/rp_M_AXI]
@@ -753,10 +748,13 @@ proc create_root_design { parentCell } {
   connect_bd_net -net clk50_buf_IBUF_OUT  [get_bd_ports clk50] \
   [get_bd_pins axi_hwicap_0/icap_clk] \
   [get_bd_pins clk200_clk_wiz/clk_in1]
-  connect_bd_net -net deadbeef_const_dout  [get_bd_pins deadbeef_const/dout] \
+  connect_bd_net -net mig7_status_concat_dout  [get_bd_pins mig7_status_concat/dout] \
   [get_bd_pins axi_gpio_0/gpio2_io_i]
+  connect_bd_net -net mig_7series_0_init_calib_complete  [get_bd_pins mig_7series_0/init_calib_complete] \
+  [get_bd_pins mig7_status_concat/In1]
   connect_bd_net -net mig_7series_0_mmcm_locked  [get_bd_pins mig_7series_0/mmcm_locked] \
-  [get_bd_pins rst_mig_7series_0_100M/dcm_locked]
+  [get_bd_pins rst_mig_7series_0_100M/dcm_locked] \
+  [get_bd_pins mig7_status_concat/In0]
   connect_bd_net -net mig_7series_0_ui_clk  [get_bd_pins mig_7series_0/ui_clk] \
   [get_bd_pins rst_mig_7series_0_100M/slowest_sync_clk] \
   [get_bd_pins xdma_axi_smc/aclk1]
