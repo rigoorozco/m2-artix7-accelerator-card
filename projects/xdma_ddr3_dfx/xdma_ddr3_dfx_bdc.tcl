@@ -247,7 +247,7 @@ proc create_root_design { parentCell } {
    CONFIG.ASSOCIATED_BUSIF {rp_M_AXI:rp_S_AXI} \
    CONFIG.ASSOCIATED_RESET {rp_resetn:resetn} \
  ] $clk
-  set resetn [ create_bd_port -dir I resetn ]
+  set rp_resetn [ create_bd_port -dir I rp_resetn ]
 
   # Create instance: axi_datamover_0, and set properties
   set axi_datamover_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_datamover:5.1 axi_datamover_0 ]
@@ -411,7 +411,7 @@ proc create_root_design { parentCell } {
   [get_bd_pins rp_s_axi_register_slice/aclk] \
   [get_bd_pins rp_m_axi_smc/aclk] \
   [get_bd_pins rp_s_axi_smc/aclk]
-  connect_bd_net -net resetn_1  [get_bd_ports resetn] \
+  connect_bd_net -net rp_resetn_1  [get_bd_ports rp_resetn] \
   [get_bd_pins axi_datamover_0/m_axi_mm2s_aresetn] \
   [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aresetn] \
   [get_bd_pins axi_datamover_1/m_axi_s2mm_aresetn] \

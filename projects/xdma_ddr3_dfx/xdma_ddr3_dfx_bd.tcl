@@ -148,6 +148,7 @@ xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:dfx_axi_shutdown_manager:1.0\
 xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:axi_register_slice:2.1\
+xilinx.com:ip:dfx_decoupler:1.0\
 "
 
    set list_ips_missing ""
@@ -414,13 +415,14 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   # Create pins
   create_bd_pin -dir I -type clk clk
   create_bd_pin -dir I resetn
+  create_bd_pin -dir O -from 0 -to 0 rp_resetn
 
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
   set_property -dict [list \
     CONFIG.C_ALL_INPUTS_2 {1} \
     CONFIG.C_ALL_OUTPUTS {1} \
-    CONFIG.C_GPIO2_WIDTH {4} \
+    CONFIG.C_GPIO2_WIDTH {5} \
     CONFIG.C_GPIO_WIDTH {1} \
     CONFIG.C_IS_DUAL {1} \
   ] $axi_gpio_0
@@ -446,7 +448,7 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
     CONFIG.IN3_WIDTH {1} \
     CONFIG.IN4_WIDTH {1} \
     CONFIG.IN5_WIDTH {27} \
-    CONFIG.NUM_PORTS {4} \
+    CONFIG.NUM_PORTS {5} \
   ] $xlconcat_status
 
 
@@ -485,6 +487,15 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   ] $s_axi_smc
 
 
+  # Create instance: resetn_dfx_decoupler, and set properties
+  set resetn_dfx_decoupler [ create_bd_cell -type ip -vlnv xilinx.com:ip:dfx_decoupler:1.0 resetn_dfx_decoupler ]
+  set_property -dict [list \
+    CONFIG.ALL_PARAMS {INTF {resetn {ID 0 VLNV xilinx.com:signal:reset_rtl:1.0 REGISTER 0 SIGNALS {RST {PRESENT 1 WIDTH 1}}}}} \
+    CONFIG.GUI_INTERFACE_NAME {resetn} \
+    CONFIG.GUI_SELECT_VLNV {xilinx.com:signal:reset_rtl:1.0} \
+  ] $resetn_dfx_decoupler
+
+
   # Create interface connections
   connect_bd_intf_net -intf_net S_AXI_1 [get_bd_intf_pins S_AXI] [get_bd_intf_pins s_axi_smc/S00_AXI]
   connect_bd_intf_net -intf_net dfx_axi_shutdown_static_master_M_AXI [get_bd_intf_pins rp_s_axi_register_slice/S_AXI] [get_bd_intf_pins dfx_axi_shutdown_static_master/M_AXI]
@@ -517,12 +528,18 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   [get_bd_pins dfx_axi_shutdown_static_slave/resetn] \
   [get_bd_pins rp_m_axi_register_slice/aresetn] \
   [get_bd_pins rp_s_axi_register_slice/aresetn] \
-  [get_bd_pins s_axi_smc/aresetn]
+  [get_bd_pins s_axi_smc/aresetn] \
+  [get_bd_pins resetn_dfx_decoupler/rp_resetn_RST]
+  connect_bd_net -net resetn_dfx_decoupler_decouple_status  [get_bd_pins resetn_dfx_decoupler/decouple_status] \
+  [get_bd_pins xlconcat_status/In4]
+  connect_bd_net -net resetn_dfx_decoupler_s_resetn_RST  [get_bd_pins resetn_dfx_decoupler/s_resetn_RST] \
+  [get_bd_pins rp_resetn]
   connect_bd_net -net xlconcat_status_dout  [get_bd_pins xlconcat_status/dout] \
   [get_bd_pins axi_gpio_0/gpio2_io_i]
   connect_bd_net -net xlslice_disconnect_Dout  [get_bd_pins axi_gpio_0/gpio_io_o] \
   [get_bd_pins dfx_axi_shutdown_static_master/request_shutdown] \
-  [get_bd_pins dfx_axi_shutdown_static_slave/request_shutdown]
+  [get_bd_pins dfx_axi_shutdown_static_slave/request_shutdown] \
+  [get_bd_pins resetn_dfx_decoupler/decouple]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -744,6 +761,8 @@ proc create_root_design { parentCell } {
   [get_bd_pins rst_mig_7series_0_100M/ext_reset_in]
   connect_bd_net -net reset_rtl_0_1  [get_bd_ports reset_rtl_0] \
   [get_bd_pins xdma_0/sys_rst_n]
+  connect_bd_net -net rp_resetn_1  [get_bd_pins dfx_socket/rp_resetn] \
+  [get_bd_pins dfx_partition/rp_resetn]
   connect_bd_net -net rst_mig_7series_0_100M_peripheral_aresetn  [get_bd_pins rst_mig_7series_0_100M/peripheral_aresetn] \
   [get_bd_pins mig_7series_0/aresetn]
   connect_bd_net -net util_ds_buf_IBUF_OUT  [get_bd_pins util_ds_buf/IBUF_OUT] \
@@ -761,8 +780,7 @@ proc create_root_design { parentCell } {
   [get_bd_pins axi_hwicap_0/s_axi_aresetn] \
   [get_bd_pins mig_7series_0/sys_rst] \
   [get_bd_pins xdma_axi_lite_smc/aresetn] \
-  [get_bd_pins xdma_axi_smc/aresetn] \
-  [get_bd_pins dfx_partition/resetn]
+  [get_bd_pins xdma_axi_smc/aresetn]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces dfx_partition/axi_datamover_0/Data_MM2S] [get_bd_addr_segs mig_7series_0/memmap/memaddr] -force
