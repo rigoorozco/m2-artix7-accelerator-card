@@ -719,20 +719,13 @@ proc create_root_design { parentCell } {
   ] $deadbeef_const
 
 
-  # Create instance: clk50_buf, and set properties
-  set clk50_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 clk50_buf ]
-  set_property CONFIG.C_BUF_TYPE {BUFG} $clk50_buf
-
-
-  # Create instance: rst_50M, and set properties
-  set rst_50M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_50M ]
-
   # Create instance: clk200_clk_wiz, and set properties
   set clk200_clk_wiz [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk200_clk_wiz ]
   set_property -dict [list \
     CONFIG.CLKOUT1_JITTER {142.107} \
     CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} \
     CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} \
+    CONFIG.USE_RESET {false} \
   ] $clk200_clk_wiz
 
 
@@ -752,18 +745,11 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pcie_7x_mgt_rtl_0] [get_bd_intf_pins xdma_0/pcie_mgt]
 
   # Create port connections
-  connect_bd_net -net M02_ARESETN_1  [get_bd_pins rst_50M/interconnect_aresetn] \
-  [get_bd_pins xdma_0_axi_periph/M02_ARESETN]
   connect_bd_net -net clk200_clk_wiz_clk_out1  [get_bd_pins clk200_clk_wiz/clk_out1] \
   [get_bd_pins mig_7series_0/clk_ref_i] \
   [get_bd_pins mig_7series_0/sys_clk_i]
-  connect_bd_net -net clk50_1  [get_bd_ports clk50] \
-  [get_bd_pins clk50_buf/BUFG_I]
-  connect_bd_net -net clk50_buf_IBUF_OUT  [get_bd_pins clk50_buf/BUFG_O] \
-  [get_bd_pins rst_50M/slowest_sync_clk] \
-  [get_bd_pins axi_hwicap_0/s_axi_aclk] \
+  connect_bd_net -net clk50_buf_IBUF_OUT  [get_bd_ports clk50] \
   [get_bd_pins axi_hwicap_0/icap_clk] \
-  [get_bd_pins xdma_0_axi_periph/M02_ACLK] \
   [get_bd_pins clk200_clk_wiz/clk_in1]
   connect_bd_net -net deadbeef_const_dout  [get_bd_pins deadbeef_const/dout] \
   [get_bd_pins axi_gpio_0/gpio2_io_i]
@@ -780,11 +766,6 @@ proc create_root_design { parentCell } {
   [get_bd_pins xdma_0/sys_rst_n]
   connect_bd_net -net rp_clk_1  [get_bd_pins dfx_socket/rp_clk] \
   [get_bd_pins dfx_partition/rp_clk]
-  connect_bd_net -net rst_50M_peripheral_aresetn  [get_bd_pins rst_50M/peripheral_aresetn] \
-  [get_bd_pins axi_hwicap_0/s_axi_aresetn] \
-  [get_bd_pins mig_7series_0/sys_rst]
-  connect_bd_net -net rst_50M_peripheral_reset  [get_bd_pins rst_50M/peripheral_reset] \
-  [get_bd_pins clk200_clk_wiz/reset]
   connect_bd_net -net rst_mig_7series_0_100M_interconnect_aresetn  [get_bd_pins rst_mig_7series_0_100M/interconnect_aresetn] \
   [get_bd_pins axi_interconnect_0/M00_ARESETN]
   connect_bd_net -net rst_mig_7series_0_100M_peripheral_aresetn  [get_bd_pins rst_mig_7series_0_100M/peripheral_aresetn] \
@@ -800,7 +781,9 @@ proc create_root_design { parentCell } {
   [get_bd_pins xdma_0_axi_periph/M01_ACLK] \
   [get_bd_pins axi_interconnect_0/ACLK] \
   [get_bd_pins axi_interconnect_0/S00_ACLK] \
-  [get_bd_pins axi_interconnect_0/S01_ACLK]
+  [get_bd_pins axi_interconnect_0/S01_ACLK] \
+  [get_bd_pins xdma_0_axi_periph/M02_ACLK] \
+  [get_bd_pins axi_hwicap_0/s_axi_aclk]
   connect_bd_net -net xdma_0_axi_aresetn  [get_bd_pins xdma_0/axi_aresetn] \
   [get_bd_pins dfx_socket/resetn] \
   [get_bd_pins axi_gpio_0/s_axi_aresetn] \
@@ -811,7 +794,9 @@ proc create_root_design { parentCell } {
   [get_bd_pins axi_interconnect_0/ARESETN] \
   [get_bd_pins axi_interconnect_0/S00_ARESETN] \
   [get_bd_pins axi_interconnect_0/S01_ARESETN] \
-  [get_bd_pins rst_50M/ext_reset_in]
+  [get_bd_pins xdma_0_axi_periph/M02_ARESETN] \
+  [get_bd_pins axi_hwicap_0/s_axi_aresetn] \
+  [get_bd_pins mig_7series_0/sys_rst]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces dfx_partition/axi_datamover_0/Data_MM2S] [get_bd_addr_segs mig_7series_0/memmap/memaddr] -force
