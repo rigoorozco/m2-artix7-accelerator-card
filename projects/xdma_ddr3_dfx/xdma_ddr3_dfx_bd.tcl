@@ -677,6 +677,8 @@ proc create_root_design { parentCell } {
     CONFIG.axisten_freq {125} \
     CONFIG.cfg_mgmt_if {false} \
     CONFIG.pciebar2axibar_axil_master {0x40000000} \
+    CONFIG.pf0_Use_Class_Code_Lookup_Assistant {true} \
+    CONFIG.pf0_base_class_menu {Memory_controller} \
     CONFIG.pf0_device_id {7024} \
     CONFIG.pf0_interrupt_pin {NONE} \
     CONFIG.pf0_msix_cap_pba_bir {BAR_3:2} \
@@ -685,6 +687,7 @@ proc create_root_design { parentCell } {
     CONFIG.pf0_msix_cap_table_offset {00008000} \
     CONFIG.pf0_msix_cap_table_size {01F} \
     CONFIG.pf0_msix_enabled {true} \
+    CONFIG.pf0_sub_class_interface_menu {Other_memory_controller} \
     CONFIG.pl_link_cap_max_link_speed {5.0_GT/s} \
     CONFIG.pl_link_cap_max_link_width {X4} \
     CONFIG.plltype {QPLL1} \
@@ -760,7 +763,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net mig_7series_0_ui_clk_sync_rst  [get_bd_pins mig_7series_0/ui_clk_sync_rst] \
   [get_bd_pins rst_mig_7series_0_100M/ext_reset_in]
   connect_bd_net -net reset_rtl_0_1  [get_bd_ports reset_rtl_0] \
-  [get_bd_pins xdma_0/sys_rst_n]
+  [get_bd_pins xdma_0/sys_rst_n] \
+  [get_bd_pins mig_7series_0/sys_rst]
   connect_bd_net -net rp_resetn_1  [get_bd_pins dfx_socket/rp_resetn] \
   [get_bd_pins dfx_partition/rp_resetn]
   connect_bd_net -net rst_mig_7series_0_100M_peripheral_aresetn  [get_bd_pins rst_mig_7series_0_100M/peripheral_aresetn] \
@@ -778,7 +782,6 @@ proc create_root_design { parentCell } {
   [get_bd_pins dfx_socket/resetn] \
   [get_bd_pins axi_gpio_0/s_axi_aresetn] \
   [get_bd_pins axi_hwicap_0/s_axi_aresetn] \
-  [get_bd_pins mig_7series_0/sys_rst] \
   [get_bd_pins xdma_axi_lite_smc/aresetn] \
   [get_bd_pins xdma_axi_smc/aresetn]
 
