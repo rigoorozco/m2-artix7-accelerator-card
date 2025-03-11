@@ -38,6 +38,6 @@ for {set p 0} {${p} < ${num_partitions}} {incr p} {
     ${build_directory}/reconfigurable/config_${inst}_routed.dcp
 
     # Save bitstream and close
-    write_bitstream -force ${build_directory}/reconfigurable/${proj_name}
+    write_bitstream -bin_file -force ${build_directory}/reconfigurable/${proj_name}
     close_project
 }

@@ -110,6 +110,36 @@ int XHwIcap_CommandDesync(XHwIcap *InstancePtr)
     return XST_SUCCESS;
 }
 
+int XHwIcap_CommandStart(XHwIcap *InstancePtr)
+{
+    int Status;
+    uint32_t FrameBuffer[DESYNC_COMMAND_SIZE];
+    uint32_t Index = 0;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    /*
+     * Create the data to be written to the ICAP.
+     */
+    FrameBuffer[Index++] = (XHwIcap_Type1Write(XHI_CMD) | 1);
+    FrameBuffer[Index++] = XHI_CMD_START;
+    FrameBuffer[Index++] = XHI_DUMMY_PACKET;
+    FrameBuffer[Index++] = XHI_DUMMY_PACKET;
+
+
+    /*
+     * Write the data to the FIFO and intiate the transfer of data present
+     * in the FIFO to the ICAP device.
+     */
+    Status = XHwIcap_DeviceWrite(InstancePtr, &FrameBuffer[0], Index);
+    if (Status != XST_SUCCESS)  {
+        return XST_FAILURE;
+    }
+
+    return XST_SUCCESS;
+}
+
 /****************************************************************************/
 /**
 *
