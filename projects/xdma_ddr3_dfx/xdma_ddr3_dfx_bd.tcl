@@ -618,6 +618,7 @@ proc create_root_design { parentCell } {
     CONFIG.C_INCLUDE_STARTUP {1} \
     CONFIG.C_OPERATION {0} \
     CONFIG.C_SHARED_STARTUP {0} \
+    CONFIG.C_WRITE_FIFO_DEPTH {1024} \
   ] $axi_hwicap_0
 
 
