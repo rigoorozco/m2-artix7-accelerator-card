@@ -93,7 +93,7 @@ if { ${BUILD_STEP} > 0 } {
         set_property PROCESSING_ORDER NORMAL [get_files -all ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/ip/${design_name}_xdma_0_0/ip_0/source/${design_name}_xdma_0_0_pcie2_ip-PCIE_X0Y0.xdc]
 
         # Launch Implementation
-        launch_runs impl_1 -to_step write_bitstream -jobs ${NUM_PROC}
+        launch_runs impl_1 -jobs ${NUM_PROC}
         wait_on_run impl_1
 
         # Generate a timing and power reports and write to disk
@@ -103,13 +103,14 @@ if { ${BUILD_STEP} > 0 } {
         -check_timing_verbose -max_paths 10 -input_pins -file ${build_directory}/static/imp_timing.rpt
         report_power -file ${build_directory}/static/imp_power.rpt
 
-        # Copy routed checkpoint(s) to build directory
-        foreach dcp [glob ${proj_directory}/${proj_name}.runs/impl_1/*_routed.dcp] {
+        # Copy routed checkpoint to build directory
+        foreach dcp [glob ${proj_directory}/${proj_name}.runs/impl_1/*_wrapper_routed.dcp] {
             file copy -force ${dcp} ${build_directory}/static/
         }
 
-        # Save bitstream(s) and close
-        write_bitstream -bin_file -force ${build_directory}/static/${proj_name}
+        # Save bitstream and close
+        write_bitstream -force -bin_file -no_binary_bitfile -no_partial_bitfile \
+        ${build_directory}/static/${proj_name}
         close_project
     }
 }

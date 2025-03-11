@@ -37,7 +37,24 @@ for {set p 0} {${p} < ${num_partitions}} {incr p} {
     pr_verify ${build_directory}/static/${proj_name}_wrapper_routed.dcp \
     ${build_directory}/reconfigurable/config_${inst}_routed.dcp
 
-    # Save bitstream and close
-    write_bitstream -bin_file -force ${build_directory}/reconfigurable/${proj_name}
+    # Remove CFG MEM settings
+    reset_property BITSTREAM.GENERAL.COMPRESS [current_design]
+    reset_property BITSTREAM.CONFIG.CONFIGRATE [current_design]
+    reset_property BITSTREAM.CONFIG.SPI_BUSWIDTH [current_design]
+    reset_property BITSTREAM.CONFIG.SPI_FALL_EDGE [current_design]
+
+    # Save partial bitstream
+    write_bitstream -force -cell ${module} ${build_directory}/reconfigurable/${proj_name}_pblock_rm_partial.bit
+
+    # Format partial bitstream for ICAP:
+    #
+    # The user guide says SMAPx32 and disablebitswap are only needed for PCAP or MCAP but
+    # but it's probably needed here since we aren't running on an ARM or the MicroBlaze.
+    #
+    write_cfgmem -force -format BIN -interface SMAPx32 -disablebitswap \
+    -loadbit "up 0x0 ${build_directory}/reconfigurable/${proj_name}_pblock_rm_partial.bit" \
+    -file "${build_directory}/reconfigurable/${proj_name}_pblock_rm_partial_icap.bin"
+
+    # We're finished
     close_project
 }
