@@ -53,8 +53,9 @@ int main(int argc, char **argv)
     int status;
 
     FILE* file;
-    int file_size_bytes;
-    int file_size_words;
+    uint64_t file_size_bytes;
+    uint64_t file_size_words;
+    uint32_t* buffer;
 
     /* not enough arguments given? */
     if (argc < 4) {
@@ -97,12 +98,10 @@ int main(int argc, char **argv)
     file_size_words = file_size_bytes/sizeof(uint32_t);
 
     /* Copy file contents to buffer */
-    uint32_t buffer[file_size_words];
-    for (int i; i < file_size_words; i++) {
-        if (fread(&buffer[i], sizeof(uint32_t), 1, file) != 1) {
-            printf("reading from bitstream file failed: %s.\n", strerror(errno));
-            return -errno;
-        }
+    buffer = (uint32_t*) malloc(file_size_bytes);
+    if (fread(buffer, sizeof(uint32_t), file_size_words, file) != file_size_words) {
+        printf("reading from bitstream file failed: %s.\n", strerror(errno));
+        return -errno;
     }
     printf("bitstream file was copied to buffer.\n");
 
@@ -148,13 +147,16 @@ int main(int argc, char **argv)
     /*
      * Write the the data to the device.
      */
-    status = XHwIcap_DeviceWrite(&HwIcapInstance, (uint32_t *) &buffer[0], file_size_words);
+    status = XHwIcap_DeviceWrite(&HwIcapInstance, buffer, file_size_words);
     if (status != XST_SUCCESS) {
         printf("HWICAP device write failed!\r\n");
         return XST_FAILURE;
     }
-
     printf("Successfully ran HWICAP device write!\r\n");
+
+    /* Done using buffer free it */
+    free(buffer);
+
     return XST_SUCCESS;
 
 close:
