@@ -63,15 +63,6 @@ if { ${BUILD_STEP} > 0 } {
     wait_on_run synth_1
     open_run synth_1 -name synth_1
 
-    # Make output directory
-    file mkdir ${build_directory}/static
-
-    # Generate a timing and power reports and write to disk
-    # Can create custom reports as required
-    report_timing_summary -delay_type max -report_unconstrained -check_timing_verbose \
-    -max_paths 10 -input_pins -file ${build_directory}/static/syn_timing.rpt
-    report_power -file ${build_directory}/static/syn_power.rpt
-
     set num_partitions [llength ${partition_definitions}]
     for {set p 0} {${p} < ${num_partitions}} {incr p} {
         # Setup partition definitions
@@ -89,6 +80,15 @@ if { ${BUILD_STEP} > 0 } {
     }
 
     if { ${BUILD_STEP} > 1 } {
+        # Make output directory
+        file mkdir ${build_directory}/static
+
+        # Generate a timing and power reports and write to disk
+        # Can create custom reports as required
+        report_timing_summary -delay_type max -report_unconstrained -check_timing_verbose \
+        -max_paths 10 -input_pins -file ${build_directory}/static/syn_timing.rpt
+        report_power -file ${build_directory}/static/syn_power.rpt
+
         # Move PCIe IP constraint file back so ours gets applied first
         set_property PROCESSING_ORDER NORMAL [get_files -all ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/ip/${design_name}_xdma_0_0/ip_0/source/${design_name}_xdma_0_0_pcie2_ip-PCIE_X0Y0.xdc]
 
