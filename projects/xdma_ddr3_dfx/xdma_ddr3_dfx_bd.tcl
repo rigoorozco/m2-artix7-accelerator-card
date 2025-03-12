@@ -148,6 +148,7 @@ xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:dfx_axi_shutdown_manager:1.0\
 xilinx.com:ip:axi_register_slice:2.1\
 xilinx.com:ip:dfx_decoupler:1.0\
+xilinx.com:ip:util_reduced_logic:2.0\
 "
 
    set list_ips_missing ""
@@ -457,9 +458,33 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
     CONFIG.ADDR_WIDTH {64} \
     CONFIG.ARUSER_WIDTH {4} \
     CONFIG.AWUSER_WIDTH {4} \
+    CONFIG.BUSER_WIDTH {0} \
     CONFIG.DATA_WIDTH {128} \
+    CONFIG.HAS_BRESP {1} \
+    CONFIG.HAS_BURST {1} \
+    CONFIG.HAS_CACHE {1} \
+    CONFIG.HAS_LOCK {1} \
+    CONFIG.HAS_PROT {1} \
+    CONFIG.HAS_QOS {1} \
+    CONFIG.HAS_REGION {1} \
+    CONFIG.HAS_RRESP {1} \
+    CONFIG.HAS_WSTRB {1} \
+    CONFIG.ID_WIDTH {0} \
+    CONFIG.MAX_BURST_LENGTH {1} \
+    CONFIG.NUM_READ_OUTSTANDING {1} \
+    CONFIG.NUM_READ_THREADS {0} \
+    CONFIG.NUM_WRITE_OUTSTANDING {1} \
+    CONFIG.NUM_WRITE_THREADS {0} \
     CONFIG.PROTOCOL {AXI4} \
     CONFIG.READ_WRITE_MODE {READ_WRITE} \
+    CONFIG.REG_AR {1} \
+    CONFIG.REG_AW {1} \
+    CONFIG.REG_B {1} \
+    CONFIG.RUSER_BITS_PER_BYTE {0} \
+    CONFIG.RUSER_WIDTH {0} \
+    CONFIG.SUPPORTS_NARROW_BURST {1} \
+    CONFIG.WUSER_BITS_PER_BYTE {0} \
+    CONFIG.WUSER_WIDTH {0} \
   ] $rp_m_axi_register_slice
 
 
@@ -468,6 +493,20 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   set_property -dict [list \
     CONFIG.ADDR_WIDTH {32} \
     CONFIG.DATA_WIDTH {32} \
+    CONFIG.HAS_BRESP {1} \
+    CONFIG.HAS_BURST {1} \
+    CONFIG.HAS_CACHE {1} \
+    CONFIG.HAS_LOCK {1} \
+    CONFIG.HAS_PROT {1} \
+    CONFIG.HAS_QOS {1} \
+    CONFIG.HAS_REGION {1} \
+    CONFIG.HAS_RRESP {1} \
+    CONFIG.HAS_WSTRB {1} \
+    CONFIG.MAX_BURST_LENGTH {1} \
+    CONFIG.NUM_READ_OUTSTANDING {1} \
+    CONFIG.NUM_READ_THREADS {0} \
+    CONFIG.NUM_WRITE_OUTSTANDING {1} \
+    CONFIG.NUM_WRITE_THREADS {0} \
     CONFIG.PROTOCOL {AXI4LITE} \
     CONFIG.READ_WRITE_MODE {READ_WRITE} \
     CONFIG.REG_AR {1} \
@@ -475,6 +514,9 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
     CONFIG.REG_B {1} \
     CONFIG.REG_R {1} \
     CONFIG.REG_W {1} \
+    CONFIG.RUSER_BITS_PER_BYTE {0} \
+    CONFIG.SUPPORTS_NARROW_BURST {1} \
+    CONFIG.WUSER_BITS_PER_BYTE {0} \
   ] $rp_s_axi_register_slice
 
 
@@ -495,6 +537,14 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   ] $resetn_dfx_decoupler
 
 
+  # Create instance: axi_in_shutdown, and set properties
+  set axi_in_shutdown [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_reduced_logic:2.0 axi_in_shutdown ]
+  set_property CONFIG.C_SIZE {2} $axi_in_shutdown
+
+
+  # Create instance: axi_in_shutdown_concat, and set properties
+  set axi_in_shutdown_concat [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 axi_in_shutdown_concat ]
+
   # Create interface connections
   connect_bd_intf_net -intf_net S_AXI_1 [get_bd_intf_pins S_AXI] [get_bd_intf_pins s_axi_smc/S00_AXI]
   connect_bd_intf_net -intf_net dfx_axi_shutdown_static_master_M_AXI [get_bd_intf_pins rp_s_axi_register_slice/S_AXI] [get_bd_intf_pins dfx_axi_shutdown_static_master/M_AXI]
@@ -506,6 +556,10 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   connect_bd_intf_net -intf_net s_axi_smc_M01_AXI [get_bd_intf_pins dfx_axi_shutdown_static_master/S_AXI] [get_bd_intf_pins s_axi_smc/M01_AXI]
 
   # Create port connections
+  connect_bd_net -net axi_in_shutdown_Res  [get_bd_pins axi_in_shutdown/Res] \
+  [get_bd_pins resetn_dfx_decoupler/decouple]
+  connect_bd_net -net axi_in_shutdown_concat_1  [get_bd_pins axi_in_shutdown_concat/dout] \
+  [get_bd_pins axi_in_shutdown/Op1]
   connect_bd_net -net clk_1  [get_bd_pins clk] \
   [get_bd_pins axi_gpio_0/s_axi_aclk] \
   [get_bd_pins dfx_axi_shutdown_static_master/clk] \
@@ -514,31 +568,32 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   [get_bd_pins rp_s_axi_register_slice/aclk] \
   [get_bd_pins s_axi_smc/aclk]
   connect_bd_net -net dfx_axi_shutdown_static_master_in_shutdown  [get_bd_pins dfx_axi_shutdown_static_master/in_shutdown] \
-  [get_bd_pins xlconcat_status/In1]
+  [get_bd_pins xlconcat_status/In1] \
+  [get_bd_pins axi_in_shutdown_concat/In1]
   connect_bd_net -net dfx_axi_shutdown_static_master_shutdown_requested  [get_bd_pins dfx_axi_shutdown_static_master/shutdown_requested] \
   [get_bd_pins xlconcat_status/In0]
   connect_bd_net -net dfx_axi_shutdown_static_slave_in_shutdown  [get_bd_pins dfx_axi_shutdown_static_slave/in_shutdown] \
-  [get_bd_pins xlconcat_status/In3]
+  [get_bd_pins xlconcat_status/In3] \
+  [get_bd_pins axi_in_shutdown_concat/In0]
   connect_bd_net -net dfx_axi_shutdown_static_slave_shutdown_requested  [get_bd_pins dfx_axi_shutdown_static_slave/shutdown_requested] \
   [get_bd_pins xlconcat_status/In2]
   connect_bd_net -net resetn_1  [get_bd_pins resetn] \
   [get_bd_pins axi_gpio_0/s_axi_aresetn] \
   [get_bd_pins dfx_axi_shutdown_static_master/resetn] \
   [get_bd_pins dfx_axi_shutdown_static_slave/resetn] \
-  [get_bd_pins rp_m_axi_register_slice/aresetn] \
-  [get_bd_pins rp_s_axi_register_slice/aresetn] \
   [get_bd_pins s_axi_smc/aresetn] \
   [get_bd_pins resetn_dfx_decoupler/rp_resetn_RST]
   connect_bd_net -net resetn_dfx_decoupler_decouple_status  [get_bd_pins resetn_dfx_decoupler/decouple_status] \
   [get_bd_pins xlconcat_status/In4]
   connect_bd_net -net resetn_dfx_decoupler_s_resetn_RST  [get_bd_pins resetn_dfx_decoupler/s_resetn_RST] \
-  [get_bd_pins rp_resetn]
+  [get_bd_pins rp_resetn] \
+  [get_bd_pins rp_s_axi_register_slice/aresetn] \
+  [get_bd_pins rp_m_axi_register_slice/aresetn]
   connect_bd_net -net xlconcat_status_dout  [get_bd_pins xlconcat_status/dout] \
   [get_bd_pins axi_gpio_0/gpio2_io_i]
   connect_bd_net -net xlslice_disconnect_Dout  [get_bd_pins axi_gpio_0/gpio_io_o] \
   [get_bd_pins dfx_axi_shutdown_static_master/request_shutdown] \
-  [get_bd_pins dfx_axi_shutdown_static_slave/request_shutdown] \
-  [get_bd_pins resetn_dfx_decoupler/decouple]
+  [get_bd_pins dfx_axi_shutdown_static_slave/request_shutdown]
 
   # Restore current instance
   current_bd_instance $oldCurInst

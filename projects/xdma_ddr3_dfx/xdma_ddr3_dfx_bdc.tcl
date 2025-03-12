@@ -311,12 +311,14 @@ proc create_root_design { parentCell } {
     CONFIG.AWUSER_WIDTH {4} \
     CONFIG.BUSER_WIDTH {0} \
     CONFIG.DATA_WIDTH {128} \
+    CONFIG.HAS_BRESP {1} \
     CONFIG.HAS_BURST {1} \
     CONFIG.HAS_CACHE {1} \
     CONFIG.HAS_LOCK {1} \
     CONFIG.HAS_PROT {1} \
     CONFIG.HAS_QOS {1} \
     CONFIG.HAS_REGION {1} \
+    CONFIG.HAS_RRESP {1} \
     CONFIG.HAS_WSTRB {1} \
     CONFIG.ID_WIDTH {0} \
     CONFIG.MAX_BURST_LENGTH {1} \
@@ -326,6 +328,9 @@ proc create_root_design { parentCell } {
     CONFIG.NUM_WRITE_THREADS {0} \
     CONFIG.PROTOCOL {AXI4} \
     CONFIG.READ_WRITE_MODE {READ_WRITE} \
+    CONFIG.REG_AR {1} \
+    CONFIG.REG_AW {1} \
+    CONFIG.REG_B {1} \
     CONFIG.RUSER_BITS_PER_BYTE {0} \
     CONFIG.RUSER_WIDTH {0} \
     CONFIG.SUPPORTS_NARROW_BURST {1} \
@@ -361,7 +366,7 @@ proc create_root_design { parentCell } {
     CONFIG.REG_R {1} \
     CONFIG.REG_W {1} \
     CONFIG.RUSER_BITS_PER_BYTE {0} \
-    CONFIG.SUPPORTS_NARROW_BURST {0} \
+    CONFIG.SUPPORTS_NARROW_BURST {1} \
     CONFIG.WUSER_BITS_PER_BYTE {0} \
   ] $rp_s_axi_register_slice
 
