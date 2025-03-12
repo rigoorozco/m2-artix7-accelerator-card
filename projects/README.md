@@ -36,7 +36,7 @@ This is the most complex of the three projects and has more bells and whistles.
 
 I've tested various methods of generating binary bitstreams that are formatted in a way that the ICAP IP likes.
 
-This can be solved by shuffling the bytes around in the HWICAP software or generating the bitstream in Vivado that will making writing the bistream easier. I've gone with the latter.
+This can be solved by shuffling the bytes around in the HWICAP software or generating a bitstream in Vivado that will make writing the bistream easier from software. I've gone with the latter.
 
 I think partial reconfiguration is working. However, I'm running into issues integrating it with the AXI Shutdown Manager.
 
