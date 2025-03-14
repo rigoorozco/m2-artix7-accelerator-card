@@ -48,5 +48,8 @@ write_cfgmem -force -format BIN -interface SMAPx32 -disablebitswap \
     -loadbit "up 0x0 ${build_directory}/${proj_name}_pblock_rm_partial.bit" \
     -file "${build_directory}/${proj_name}_pblock_rm_partial_icap.bin"
 
+# Delete no longer needed bitstream
+file delete ${build_directory}/${proj_name}_pblock_rm_partial.bit
+
 # We're finished
 close_project
