@@ -35,6 +35,9 @@ make_wrapper -top \
 add_files -norecurse ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/hdl/${design_name}_wrapper.v
 set_property top ${proj_name}_wrapper [current_fileset]
 
+# Add hdl sources to the project
+add_files -quiet ${hdl_sources}
+
 # Now import/copy the files into the project
 import_files -force
 
