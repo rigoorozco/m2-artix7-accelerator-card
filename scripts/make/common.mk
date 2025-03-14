@@ -18,7 +18,7 @@ build: vivado
 
 synth_partitions: vivado
 	@echo "Creating partition synth checkpoints..."
-	@vivado -mode batch -source ../../scripts/tcl/build.tcl -tclargs 1 $(shell nproc)
+	@vivado -mode batch -source ../../scripts/tcl/synth_partitions.tcl -tclargs $(shell nproc)
 
 impl_partitions: vivado
 	@echo "Building partial bitstreams..."
