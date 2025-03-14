@@ -1,5 +1,5 @@
 # M2 Artix FPGA Accelerator Card
-![image info](docs/XC7A200T-DDR.png)
+![image info](docs/Images/XC7A200T-DDR.png)
 
 **WARNING**: this repository is a major WIP. Proceed with caution.
 
@@ -8,7 +8,7 @@ https://es.aliexpress.com/item/1005006844453359.html
 
 Namely, the version with DDR: XC7A200T-ddr
 
-I've downloaded the documentation from pan.baidu and translated it using Google Translate. The user guide and schematic can be found in the `docs` directory.
+I've downloaded the documentation from pan.baidu and translated it using Google Translate. The user guide and schematic can be found in the `docs/Reference` directory.
 
 ## Build Options
 With this repository you can build the following projects:
@@ -24,7 +24,7 @@ The other example (which uses RIFFA) will not be included in this repo.
 ### xdma_ddr3:
 This is a hybrid of the previous project and an example project provided in the Baidu shared folder (also not found here). It enables DDR3 using the Xilinx MIG IP core in addition to the Block RAM.
 
-From said project I copied the DDR settings and exported the pin constraints (found in `docs/mig_ddr3_pinout.ucf`).
+From said project I copied the DDR settings and exported the pin constraints (found in `docs/Micellaneous/mig_ddr3_pinout.ucf`).
 
 This project allows the DDR3 chip to be read via PCIe similar to the Block RAM.
 
@@ -33,7 +33,7 @@ This project builds on previous examples adding a Reconfigurable Partition.
 
 This Reconfigurable Partition takes up the majority of the FPGA with most of the previously mentioned components in the static region: XDMA, MIG, AXI Interconnect, etc.
 
-![image info](docs/Reconfigurable-Partition.png)
+![image info](docs/Images/Reconfigurable-Partition.png)
 
 The Reconfigurable Partition is implemented using a block design (which is has its pros and cons).
 
@@ -127,7 +127,7 @@ Once done, it runs a check against the originally created checkpoint for compati
 
 Vivado doesn't recognize by default the configuration memory used in this board: w25q128bv.
 
-Fortunately, this has an easy fix. Take a look at `docs/winbond-flash-notes.txt` for more details.
+Fortunately, this has an easy fix. Take a look at `docs/Micellaneous/winbond-flash-notes.txt` for more details.
 
 ### Non-standard PCIe Lanes
 The board was designed using a reversed lane order, opposite of what Xilinx recommends. This is talked about on Section 2.5 (page 30) of the user guide.
