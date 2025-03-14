@@ -148,7 +148,7 @@ xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:dfx_axi_shutdown_manager:1.0\
 xilinx.com:ip:axi_register_slice:2.1\
 xilinx.com:ip:dfx_decoupler:1.0\
-xilinx.com:ip:util_reduced_logic:2.0\
+xilinx.com:ip:xlslice:1.0\
 "
 
    set list_ips_missing ""
@@ -417,15 +417,15 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   create_bd_pin -dir I resetn
   create_bd_pin -dir O -from 0 -to 0 rp_resetn
 
-  # Create instance: axi_gpio_0, and set properties
-  set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
+  # Create instance: decouple_shutdown_ctrl, and set properties
+  set decouple_shutdown_ctrl [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 decouple_shutdown_ctrl ]
   set_property -dict [list \
     CONFIG.C_ALL_INPUTS_2 {1} \
     CONFIG.C_ALL_OUTPUTS {1} \
     CONFIG.C_GPIO2_WIDTH {5} \
-    CONFIG.C_GPIO_WIDTH {1} \
+    CONFIG.C_GPIO_WIDTH {3} \
     CONFIG.C_IS_DUAL {1} \
-  ] $axi_gpio_0
+  ] $decouple_shutdown_ctrl
 
 
   # Create instance: dfx_axi_shutdown_static_master, and set properties
@@ -537,13 +537,28 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   ] $resetn_dfx_decoupler
 
 
-  # Create instance: axi_in_shutdown, and set properties
-  set axi_in_shutdown [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_reduced_logic:2.0 axi_in_shutdown ]
-  set_property CONFIG.C_SIZE {2} $axi_in_shutdown
+  # Create instance: shutdown_static_slave, and set properties
+  set shutdown_static_slave [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 shutdown_static_slave ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {2} \
+    CONFIG.DIN_TO {2} \
+    CONFIG.DIN_WIDTH {3} \
+  ] $shutdown_static_slave
 
 
-  # Create instance: axi_in_shutdown_concat, and set properties
-  set axi_in_shutdown_concat [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 axi_in_shutdown_concat ]
+  # Create instance: shutdown_static_master, and set properties
+  set shutdown_static_master [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 shutdown_static_master ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {1} \
+    CONFIG.DIN_TO {1} \
+    CONFIG.DIN_WIDTH {3} \
+  ] $shutdown_static_master
+
+
+  # Create instance: decouple_resetn, and set properties
+  set decouple_resetn [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 decouple_resetn ]
+  set_property CONFIG.DIN_WIDTH {3} $decouple_resetn
+
 
   # Create interface connections
   connect_bd_intf_net -intf_net S_AXI_1 [get_bd_intf_pins S_AXI] [get_bd_intf_pins s_axi_smc/S00_AXI]
@@ -552,33 +567,33 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   connect_bd_intf_net -intf_net rp_M_AXI_1 [get_bd_intf_pins rp_M_AXI] [get_bd_intf_pins rp_m_axi_register_slice/S_AXI]
   connect_bd_intf_net -intf_net rp_m_axi_register_slice_M_AXI [get_bd_intf_pins dfx_axi_shutdown_static_slave/S_AXI] [get_bd_intf_pins rp_m_axi_register_slice/M_AXI]
   connect_bd_intf_net -intf_net rp_s_axi_register_slice_M_AXI [get_bd_intf_pins rp_S_AXI] [get_bd_intf_pins rp_s_axi_register_slice/M_AXI]
-  connect_bd_intf_net -intf_net s_axi_smc_M00_AXI [get_bd_intf_pins s_axi_smc/M00_AXI] [get_bd_intf_pins axi_gpio_0/S_AXI]
+  connect_bd_intf_net -intf_net s_axi_smc_M00_AXI [get_bd_intf_pins s_axi_smc/M00_AXI] [get_bd_intf_pins decouple_shutdown_ctrl/S_AXI]
   connect_bd_intf_net -intf_net s_axi_smc_M01_AXI [get_bd_intf_pins dfx_axi_shutdown_static_master/S_AXI] [get_bd_intf_pins s_axi_smc/M01_AXI]
 
   # Create port connections
-  connect_bd_net -net axi_in_shutdown_Res  [get_bd_pins axi_in_shutdown/Res] \
-  [get_bd_pins resetn_dfx_decoupler/decouple]
-  connect_bd_net -net axi_in_shutdown_concat_1  [get_bd_pins axi_in_shutdown_concat/dout] \
-  [get_bd_pins axi_in_shutdown/Op1]
   connect_bd_net -net clk_1  [get_bd_pins clk] \
-  [get_bd_pins axi_gpio_0/s_axi_aclk] \
+  [get_bd_pins decouple_shutdown_ctrl/s_axi_aclk] \
   [get_bd_pins dfx_axi_shutdown_static_master/clk] \
   [get_bd_pins dfx_axi_shutdown_static_slave/clk] \
   [get_bd_pins rp_m_axi_register_slice/aclk] \
   [get_bd_pins rp_s_axi_register_slice/aclk] \
   [get_bd_pins s_axi_smc/aclk]
+  connect_bd_net -net decouple_resetn_Dout  [get_bd_pins decouple_resetn/Dout] \
+  [get_bd_pins resetn_dfx_decoupler/decouple]
+  connect_bd_net -net decouple_shutdown_ctrl_gpio_io_o  [get_bd_pins decouple_shutdown_ctrl/gpio_io_o] \
+  [get_bd_pins decouple_resetn/Din] \
+  [get_bd_pins shutdown_static_master/Din] \
+  [get_bd_pins shutdown_static_slave/Din]
   connect_bd_net -net dfx_axi_shutdown_static_master_in_shutdown  [get_bd_pins dfx_axi_shutdown_static_master/in_shutdown] \
-  [get_bd_pins xlconcat_status/In1] \
-  [get_bd_pins axi_in_shutdown_concat/In1]
+  [get_bd_pins xlconcat_status/In1]
   connect_bd_net -net dfx_axi_shutdown_static_master_shutdown_requested  [get_bd_pins dfx_axi_shutdown_static_master/shutdown_requested] \
   [get_bd_pins xlconcat_status/In0]
   connect_bd_net -net dfx_axi_shutdown_static_slave_in_shutdown  [get_bd_pins dfx_axi_shutdown_static_slave/in_shutdown] \
-  [get_bd_pins xlconcat_status/In3] \
-  [get_bd_pins axi_in_shutdown_concat/In0]
+  [get_bd_pins xlconcat_status/In3]
   connect_bd_net -net dfx_axi_shutdown_static_slave_shutdown_requested  [get_bd_pins dfx_axi_shutdown_static_slave/shutdown_requested] \
   [get_bd_pins xlconcat_status/In2]
   connect_bd_net -net resetn_1  [get_bd_pins resetn] \
-  [get_bd_pins axi_gpio_0/s_axi_aresetn] \
+  [get_bd_pins decouple_shutdown_ctrl/s_axi_aresetn] \
   [get_bd_pins dfx_axi_shutdown_static_master/resetn] \
   [get_bd_pins dfx_axi_shutdown_static_slave/resetn] \
   [get_bd_pins s_axi_smc/aresetn] \
@@ -589,11 +604,12 @@ proc create_hier_cell_dfx_socket { parentCell nameHier } {
   [get_bd_pins rp_resetn] \
   [get_bd_pins rp_s_axi_register_slice/aresetn] \
   [get_bd_pins rp_m_axi_register_slice/aresetn]
-  connect_bd_net -net xlconcat_status_dout  [get_bd_pins xlconcat_status/dout] \
-  [get_bd_pins axi_gpio_0/gpio2_io_i]
-  connect_bd_net -net xlslice_disconnect_Dout  [get_bd_pins axi_gpio_0/gpio_io_o] \
-  [get_bd_pins dfx_axi_shutdown_static_master/request_shutdown] \
+  connect_bd_net -net shutdown_static_master_Dout  [get_bd_pins shutdown_static_master/Dout] \
+  [get_bd_pins dfx_axi_shutdown_static_master/request_shutdown]
+  connect_bd_net -net shutdown_static_slave_Dout  [get_bd_pins shutdown_static_slave/Dout] \
   [get_bd_pins dfx_axi_shutdown_static_slave/request_shutdown]
+  connect_bd_net -net xlconcat_status_dout  [get_bd_pins xlconcat_status/dout] \
+  [get_bd_pins decouple_shutdown_ctrl/gpio2_io_i]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -846,7 +862,7 @@ proc create_root_design { parentCell } {
   assign_bd_address -offset 0x40010000 -range 0x00002000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_partition/axi_bram_ctrl_0/S_AXI/Mem0] -force
   assign_bd_address -offset 0x40000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
   assign_bd_address -offset 0x40012000 -range 0x00001000 -with_name SEG_axi_gpio_0_Reg_1 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_partition/axi_gpio_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x40002000 -range 0x00001000 -with_name SEG_axi_gpio_0_Reg_2 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_socket/axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x40002000 -range 0x00001000 -with_name SEG_axi_gpio_0_Reg_2 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_socket/decouple_shutdown_ctrl/S_AXI/Reg] -force
   assign_bd_address -offset 0x40001000 -range 0x00001000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_hwicap_0/S_AXI_LITE/Reg] -force
 
 
