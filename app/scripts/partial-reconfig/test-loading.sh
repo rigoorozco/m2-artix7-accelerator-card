@@ -14,7 +14,7 @@ OUTPUT=$(sh -c "${SCRIPT_DIR}/../../xdma-tools/reg_rw /dev/xdma0_user ${DFX_GPIO
 echo "Wrote ${OUTPUT} to register"
 
 # Load partial bitstream
-${SCRIPT_DIR}/load-partial-bitstream.sh ${SCRIPT_DIR}/../../../projects/xdma_ddr3_dfx/build/reconfigurable/xdma_ddr3_dfx_pblock_rm_partial_icap.bin
+${SCRIPT_DIR}/load-partial-bitstream.sh ${SCRIPT_DIR}/../../../projects/xdma_ddr3_dfx/build/partial/xdma_ddr3_dfx_pblock_rm_partial_icap.bin
 
 # Read current value
 OUTPUT=$(sh -c "${SCRIPT_DIR}/../../xdma-tools/reg_rw /dev/xdma0_user ${DFX_GPIO_CH2_REG} w | tail -c 11")
