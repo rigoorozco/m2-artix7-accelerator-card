@@ -96,8 +96,31 @@ if { ${BUILD_STEP} > 0 } {
         # Copy routed checkpoint to build directory
         file copy -force [glob ${proj_directory}/${proj_name}.runs/impl_1/*_wrapper_routed.dcp] ${build_directory}/
 
-        # Save bitstream and close
+        # Save full bitstream
         write_bitstream -force -bin_file -no_binary_bitfile -no_partial_bitfile ${build_directory}/${proj_name}
+
+        # Remove CFG MEM settings
+        reset_property BITSTREAM.GENERAL.COMPRESS [current_design]
+        reset_property BITSTREAM.CONFIG.CONFIGRATE [current_design]
+        reset_property BITSTREAM.CONFIG.SPI_BUSWIDTH [current_design]
+        reset_property BITSTREAM.CONFIG.SPI_FALL_EDGE [current_design]
+
+        # Save partial bitstream
+        write_bitstream -force -cell ${partition_cell} ${build_directory}/${proj_name}_pblock_rm_partial.bit
+
+        # Format partial bitstream for ICAP:
+        #
+        # The user guide says SMAPx32 and disablebitswap are only needed for PCAP or MCAP but
+        # but it's probably needed here since we aren't running on an ARM or the MicroBlaze.
+        #
+        write_cfgmem -force -format BIN -interface SMAPx32 -disablebitswap \
+            -loadbit "up 0x0 ${build_directory}/${proj_name}_pblock_rm_partial.bit" \
+            -file "${build_directory}/${proj_name}_pblock_rm_partial_icap.bin"
+
+        # Delete no longer needed partial bitstream
+        file delete ${build_directory}/${proj_name}_pblock_rm_partial.bit
+
+        # We're finished
         close_project
     }
 }
