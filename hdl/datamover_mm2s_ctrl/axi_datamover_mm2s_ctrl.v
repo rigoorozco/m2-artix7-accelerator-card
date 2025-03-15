@@ -134,15 +134,15 @@ datamover_ctrl #(
     .up_raddr          (up_raddr_s),
     .up_rdata          (up_rdata_ctrl_s),
     .up_rack           (up_rack_ctrl_s),
-    .m_axis_cmd_tdata  (m_axis_s2mm_cmd_tdata),
-    .m_axis_cmd_tready (m_axis_s2mm_cmd_tready),
-    .m_axis_cmd_tvalid (m_axis_s2mm_cmd_tvalid),
-    .s_axis_sts_tdata  (s_axis_s2mm_sts_tdata),
-    .s_axis_sts_tkeep  (s_axis_s2mm_sts_tkeep),
-    .s_axis_sts_tlast  (s_axis_s2mm_sts_tlast),
-    .s_axis_sts_tready (s_axis_s2mm_sts_tready),
-    .s_axis_sts_tvalid (s_axis_s2mm_sts_tvalid),
-    .error             (s2mm_error)
+    .m_axis_cmd_tdata  (m_axis_mm2s_cmd_tdata),
+    .m_axis_cmd_tready (m_axis_mm2s_cmd_tready),
+    .m_axis_cmd_tvalid (m_axis_mm2s_cmd_tvalid),
+    .s_axis_sts_tdata  (s_axis_mm2s_sts_tdata),
+    .s_axis_sts_tkeep  (s_axis_mm2s_sts_tkeep),
+    .s_axis_sts_tlast  (s_axis_mm2s_sts_tlast),
+    .s_axis_sts_tready (s_axis_mm2s_sts_tready),
+    .s_axis_sts_tvalid (s_axis_mm2s_sts_tvalid),
+    .error             (mm2s_error)
 );
 
 endmodule

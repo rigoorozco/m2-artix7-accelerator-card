@@ -51,6 +51,7 @@ localparam ADDR_CMD_DSA         = 8'h09;
 localparam ADDR_CMD_TYPE        = 8'h0A;
 localparam ADDR_CMD_BTT         = 8'h0B;
 localparam ADDR_STS_WORD        = 8'h0C;
+localparam ADDR_DBG_STATE       = 8'h0D;
 
 // internal signals
 
@@ -158,6 +159,7 @@ always @(negedge up_rstn or posedge up_clk) begin
                 ADDR_CMD_TYPE:        up_rdata   <= {31'd0, cmd_type};
                 ADDR_CMD_BTT:         up_rdata   <= { 9'd0, cmd_btt};
                 ADDR_STS_WORD:        up_rdata   <= {24'd0, sts_word};
+                ADDR_DBG_STATE:       up_rdata   <= {24'd0, state};
                 default:              up_rdata   <= 32'h0;
             endcase
         end
@@ -198,6 +200,9 @@ always @(*) begin
 
                 // Load status word
                 _sts_word = s_axis_sts_tdata;
+
+                // Go to idle state
+                _state = STATE_IDLE;
             end
         end
         default: _state = 'h0;
