@@ -859,9 +859,8 @@ proc create_root_design { parentCell } {
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces dfx_partition/axi_datamover_0/Data_MM2S] [get_bd_addr_segs mig_7series_0/memmap/memaddr] -force
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces dfx_partition/axi_datamover_1/Data_S2MM] [get_bd_addr_segs mig_7series_0/memmap/memaddr] -force
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI] [get_bd_addr_segs mig_7series_0/memmap/memaddr] -force
-  assign_bd_address -offset 0x40010000 -range 0x00002000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_partition/axi_bram_ctrl_0/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x40010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_partition/axi_bram_ctrl_0/S_AXI/Mem0] -force
   assign_bd_address -offset 0x40000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x40012000 -range 0x00001000 -with_name SEG_axi_gpio_0_Reg_1 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_partition/axi_gpio_0/S_AXI/Reg] -force
   assign_bd_address -offset 0x40002000 -range 0x00001000 -with_name SEG_axi_gpio_0_Reg_2 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs dfx_socket/decouple_shutdown_ctrl/S_AXI/Reg] -force
   assign_bd_address -offset 0x40001000 -range 0x00001000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_LITE] [get_bd_addr_segs axi_hwicap_0/S_AXI_LITE/Reg] -force
 
