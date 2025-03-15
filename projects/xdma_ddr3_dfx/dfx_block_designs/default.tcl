@@ -310,17 +310,17 @@ proc create_root_design { parentCell } {
   set rp_m_axi_register_slice [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 rp_m_axi_register_slice ]
   set_property -dict [list \
     CONFIG.ADDR_WIDTH {64} \
-    CONFIG.ARUSER_WIDTH {4} \
-    CONFIG.AWUSER_WIDTH {4} \
+    CONFIG.ARUSER_WIDTH {0} \
+    CONFIG.AWUSER_WIDTH {0} \
     CONFIG.BUSER_WIDTH {0} \
     CONFIG.DATA_WIDTH {128} \
     CONFIG.HAS_BRESP {1} \
-    CONFIG.HAS_BURST {1} \
+    CONFIG.HAS_BURST {0} \
     CONFIG.HAS_CACHE {1} \
     CONFIG.HAS_LOCK {1} \
     CONFIG.HAS_PROT {1} \
-    CONFIG.HAS_QOS {1} \
-    CONFIG.HAS_REGION {1} \
+    CONFIG.HAS_QOS {0} \
+    CONFIG.HAS_REGION {0} \
     CONFIG.HAS_RRESP {1} \
     CONFIG.HAS_WSTRB {1} \
     CONFIG.ID_WIDTH {5} \
