@@ -43,6 +43,13 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # To test this script, run the following commands from Vivado Tcl console:
 # source dfx_partition_script.tcl
 
+
+# The design that will be created by this Tcl script contains the following 
+# module references:
+# axi_datamover_mm2s_ctrl, axi_datamover_s2mm_ctrl
+
+# Please add the sources of those modules before sourcing this Tcl script.
+
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project
 # <./myproj/project_1.xpr> in the current working folder.
@@ -130,10 +137,9 @@ set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
 xilinx.com:ip:axi_datamover:5.1\
-xilinx.com:ip:axi_bram_ctrl:4.1\
-xilinx.com:ip:blk_mem_gen:8.4\
 xilinx.com:ip:axi_register_slice:2.1\
 xilinx.com:ip:smartconnect:1.0\
+xilinx.com:ip:axis_data_fifo:2.0\
 "
 
    set list_ips_missing ""
@@ -151,6 +157,32 @@ xilinx.com:ip:smartconnect:1.0\
       set bCheckIPsPassed 0
    }
 
+}
+
+##################################################################
+# CHECK Modules
+##################################################################
+set bCheckModules 1
+if { $bCheckModules == 1 } {
+   set list_check_mods "\ 
+axi_datamover_mm2s_ctrl\
+axi_datamover_s2mm_ctrl\
+"
+
+   set list_mods_missing ""
+   common::send_gid_msg -ssname BD::TCL -id 2020 -severity "INFO" "Checking if the following modules exist in the project's sources: $list_check_mods ."
+
+   foreach mod_vlnv $list_check_mods {
+      if { [can_resolve_reference $mod_vlnv] == 0 } {
+         lappend list_mods_missing $mod_vlnv
+      }
+   }
+
+   if { $list_mods_missing ne "" } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2021 -severity "ERROR" "The following module(s) are not found in the project: $list_mods_missing" }
+      common::send_gid_msg -ssname BD::TCL -id 2022 -severity "INFO" "Please add source files for the missing module(s) above."
+      set bCheckIPsPassed 0
+   }
 }
 
 if { $bCheckIPsPassed != 1 } {
@@ -274,24 +306,6 @@ proc create_root_design { parentCell } {
   ] $axi_datamover_1
 
 
-  # Create instance: axi_bram_ctrl_0, and set properties
-  set axi_bram_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 axi_bram_ctrl_0 ]
-  set_property CONFIG.DATA_WIDTH {64} $axi_bram_ctrl_0
-
-
-  # Create instance: axi_bram_ctrl_0_bram, and set properties
-  set axi_bram_ctrl_0_bram [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 axi_bram_ctrl_0_bram ]
-  set_property -dict [list \
-    CONFIG.EN_SAFETY_CKT {false} \
-    CONFIG.Enable_B {Use_ENB_Pin} \
-    CONFIG.Memory_Type {True_Dual_Port_RAM} \
-    CONFIG.Port_B_Clock {100} \
-    CONFIG.Port_B_Enable_Rate {100} \
-    CONFIG.Port_B_Write_Rate {50} \
-    CONFIG.Use_RSTB_Pin {true} \
-  ] $axi_bram_ctrl_0_bram
-
-
   # Create instance: rp_m_axi_register_slice, and set properties
   set rp_m_axi_register_slice [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_register_slice:2.1 rp_m_axi_register_slice ]
   set_property -dict [list \
@@ -366,48 +380,103 @@ proc create_root_design { parentCell } {
   # Create instance: rp_s_axi_smc, and set properties
   set rp_s_axi_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 rp_s_axi_smc ]
   set_property -dict [list \
-    CONFIG.NUM_MI {1} \
+    CONFIG.NUM_MI {2} \
     CONFIG.NUM_SI {1} \
   ] $rp_s_axi_smc
 
 
+  # Create instance: axi_datamover_mm2s_c_0, and set properties
+  set block_name axi_datamover_mm2s_ctrl
+  set block_cell_name axi_datamover_mm2s_c_0
+  if { [catch {set axi_datamover_mm2s_c_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $axi_datamover_mm2s_c_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {125000000} \
+ ] [get_bd_intf_pins /axi_datamover_mm2s_c_0/m_axis_mm2s_cmd]
+
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {125000000} \
+ ] [get_bd_intf_pins /axi_datamover_mm2s_c_0/s_axis_mm2s_sts]
+
+  # Create instance: axi_datamover_s2mm_c_0, and set properties
+  set block_name axi_datamover_s2mm_ctrl
+  set block_cell_name axi_datamover_s2mm_c_0
+  if { [catch {set axi_datamover_s2mm_c_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $axi_datamover_s2mm_c_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {125000000} \
+ ] [get_bd_intf_pins /axi_datamover_s2mm_c_0/m_axis_s2mm_cmd]
+
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {125000000} \
+ ] [get_bd_intf_pins /axi_datamover_s2mm_c_0/s_axis_s2mm_sts]
+
+  # Create instance: axis_data_fifo_0, and set properties
+  set axis_data_fifo_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 axis_data_fifo_0 ]
+
   # Create interface connections
-  connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins axi_bram_ctrl_0_bram/BRAM_PORTA] [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTA]
-  connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTB [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTB] [get_bd_intf_pins axi_bram_ctrl_0_bram/BRAM_PORTB]
+  connect_bd_intf_net -intf_net axi_datamover_0_M_AXIS_MM2S [get_bd_intf_pins axis_data_fifo_0/S_AXIS] [get_bd_intf_pins axi_datamover_0/M_AXIS_MM2S]
+  connect_bd_intf_net -intf_net axi_datamover_0_M_AXIS_MM2S_STS [get_bd_intf_pins axi_datamover_mm2s_c_0/s_axis_mm2s_sts] [get_bd_intf_pins axi_datamover_0/M_AXIS_MM2S_STS]
   connect_bd_intf_net -intf_net axi_datamover_0_M_AXI_MM2S [get_bd_intf_pins axi_datamover_0/M_AXI_MM2S] [get_bd_intf_pins rp_m_axi_smc/S00_AXI]
+  connect_bd_intf_net -intf_net axi_datamover_1_M_AXIS_S2MM_STS [get_bd_intf_pins axi_datamover_1/M_AXIS_S2MM_STS] [get_bd_intf_pins axi_datamover_s2mm_c_0/s_axis_s2mm_sts]
   connect_bd_intf_net -intf_net axi_datamover_1_M_AXI_S2MM [get_bd_intf_pins axi_datamover_1/M_AXI_S2MM] [get_bd_intf_pins rp_m_axi_smc/S01_AXI]
+  connect_bd_intf_net -intf_net axi_datamover_mm2s_c_0_m_axis_mm2s_cmd [get_bd_intf_pins axi_datamover_mm2s_c_0/m_axis_mm2s_cmd] [get_bd_intf_pins axi_datamover_0/S_AXIS_MM2S_CMD]
+  connect_bd_intf_net -intf_net axi_datamover_s2mm_c_0_m_axis_s2mm_cmd [get_bd_intf_pins axi_datamover_s2mm_c_0/m_axis_s2mm_cmd] [get_bd_intf_pins axi_datamover_1/S_AXIS_S2MM_CMD]
+  connect_bd_intf_net -intf_net axis_data_fifo_0_M_AXIS [get_bd_intf_pins axis_data_fifo_0/M_AXIS] [get_bd_intf_pins axi_datamover_1/S_AXIS_S2MM]
   connect_bd_intf_net -intf_net rp_S_AXI_1 [get_bd_intf_ports rp_S_AXI] [get_bd_intf_pins rp_s_axi_register_slice/S_AXI]
   connect_bd_intf_net -intf_net rp_m_axi_register_slice_M_AXI [get_bd_intf_ports rp_M_AXI] [get_bd_intf_pins rp_m_axi_register_slice/M_AXI]
   connect_bd_intf_net -intf_net rp_m_axi_smc_M00_AXI [get_bd_intf_pins rp_m_axi_smc/M00_AXI] [get_bd_intf_pins rp_m_axi_register_slice/S_AXI]
   connect_bd_intf_net -intf_net rp_s_axi_register_slice_M_AXI [get_bd_intf_pins rp_s_axi_register_slice/M_AXI] [get_bd_intf_pins rp_s_axi_smc/S00_AXI]
-  connect_bd_intf_net -intf_net rp_s_axi_smc_M00_AXI [get_bd_intf_pins rp_s_axi_smc/M00_AXI] [get_bd_intf_pins axi_bram_ctrl_0/S_AXI]
+  connect_bd_intf_net -intf_net rp_s_axi_smc_M00_AXI [get_bd_intf_pins rp_s_axi_smc/M00_AXI] [get_bd_intf_pins axi_datamover_mm2s_c_0/s_axi]
+  connect_bd_intf_net -intf_net rp_s_axi_smc_M01_AXI [get_bd_intf_pins axi_datamover_s2mm_c_0/s_axi] [get_bd_intf_pins rp_s_axi_smc/M01_AXI]
 
   # Create port connections
+  connect_bd_net -net axi_datamover_0_mm2s_err  [get_bd_pins axi_datamover_0/mm2s_err] \
+  [get_bd_pins axi_datamover_mm2s_c_0/mm2s_error]
+  connect_bd_net -net axi_datamover_1_s2mm_err  [get_bd_pins axi_datamover_1/s2mm_err] \
+  [get_bd_pins axi_datamover_s2mm_c_0/s2mm_error]
   connect_bd_net -net clk_1  [get_bd_ports clk] \
   [get_bd_pins axi_datamover_0/m_axi_mm2s_aclk] \
   [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aclk] \
   [get_bd_pins axi_datamover_1/m_axi_s2mm_aclk] \
   [get_bd_pins axi_datamover_1/m_axis_s2mm_cmdsts_awclk] \
-  [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] \
   [get_bd_pins rp_m_axi_register_slice/aclk] \
   [get_bd_pins rp_s_axi_register_slice/aclk] \
   [get_bd_pins rp_m_axi_smc/aclk] \
-  [get_bd_pins rp_s_axi_smc/aclk]
+  [get_bd_pins rp_s_axi_smc/aclk] \
+  [get_bd_pins axis_data_fifo_0/s_axis_aclk] \
+  [get_bd_pins axi_datamover_mm2s_c_0/s_axi_aclk] \
+  [get_bd_pins axi_datamover_s2mm_c_0/s_axi_aclk]
   connect_bd_net -net rp_resetn_1  [get_bd_ports rp_resetn] \
   [get_bd_pins axi_datamover_0/m_axi_mm2s_aresetn] \
   [get_bd_pins axi_datamover_0/m_axis_mm2s_cmdsts_aresetn] \
   [get_bd_pins axi_datamover_1/m_axi_s2mm_aresetn] \
   [get_bd_pins axi_datamover_1/m_axis_s2mm_cmdsts_aresetn] \
-  [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] \
   [get_bd_pins rp_m_axi_register_slice/aresetn] \
   [get_bd_pins rp_s_axi_register_slice/aresetn] \
   [get_bd_pins rp_m_axi_smc/aresetn] \
-  [get_bd_pins rp_s_axi_smc/aresetn]
+  [get_bd_pins rp_s_axi_smc/aresetn] \
+  [get_bd_pins axis_data_fifo_0/s_axis_aresetn] \
+  [get_bd_pins axi_datamover_mm2s_c_0/s_axi_aresetn] \
+  [get_bd_pins axi_datamover_s2mm_c_0/s_axi_aresetn]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi_datamover_0/Data_MM2S] [get_bd_addr_segs rp_M_AXI/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi_datamover_1/Data_S2MM] [get_bd_addr_segs rp_M_AXI/Reg] -force
-  assign_bd_address -offset 0x40010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_bram_ctrl_0/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x40010000 -range 0x00008000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_datamover_mm2s_c_0/s_axi/reg0] -force
+  assign_bd_address -offset 0x40018000 -range 0x00008000 -target_address_space [get_bd_addr_spaces rp_S_AXI] [get_bd_addr_segs axi_datamover_s2mm_c_0/s_axi/reg0] -force
 
 
   # Restore current instance
