@@ -24,7 +24,7 @@ OUTPUT_FILE=data/output_datafile0_4K.bin
 # These base addresses correspond to default DFX BDC
 #
 MM2S_BASE_ADDR=0x10000
-S2MM_BASE_ADDR=0x11000
+S2MM_BASE_ADDR=0x18000
 
 #
 # Configuration register offsets
