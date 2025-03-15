@@ -286,8 +286,11 @@ proc create_root_design { parentCell } {
     CONFIG.c_addr_width {64} \
     CONFIG.c_dummy {1} \
     CONFIG.c_enable_s2mm {0} \
+    CONFIG.c_include_mm2s {Full} \
     CONFIG.c_m_axi_mm2s_data_width {128} \
     CONFIG.c_m_axis_mm2s_tdata_width {32} \
+    CONFIG.c_mm2s_btt_used {23} \
+    CONFIG.c_mm2s_burst_size {256} \
   ] $axi_datamover_0
 
 
@@ -299,10 +302,11 @@ proc create_root_design { parentCell } {
     CONFIG.c_enable_mm2s {0} \
     CONFIG.c_enable_s2mm {1} \
     CONFIG.c_include_s2mm {Full} \
-    CONFIG.c_include_s2mm_stsfifo {true} \
     CONFIG.c_m_axi_s2mm_awid {1} \
     CONFIG.c_m_axi_s2mm_data_width {128} \
     CONFIG.c_s2mm_addr_pipe_depth {3} \
+    CONFIG.c_s2mm_btt_used {23} \
+    CONFIG.c_s2mm_burst_size {256} \
     CONFIG.c_s_axis_s2mm_tdata_width {32} \
   ] $axi_datamover_1
 
@@ -325,11 +329,11 @@ proc create_root_design { parentCell } {
     CONFIG.HAS_RRESP {1} \
     CONFIG.HAS_WSTRB {1} \
     CONFIG.ID_WIDTH {0} \
-    CONFIG.MAX_BURST_LENGTH {1} \
+    CONFIG.MAX_BURST_LENGTH {256} \
     CONFIG.NUM_READ_OUTSTANDING {1} \
-    CONFIG.NUM_READ_THREADS {0} \
+    CONFIG.NUM_READ_THREADS {1} \
     CONFIG.NUM_WRITE_OUTSTANDING {1} \
-    CONFIG.NUM_WRITE_THREADS {0} \
+    CONFIG.NUM_WRITE_THREADS {1} \
     CONFIG.PROTOCOL {AXI4} \
     CONFIG.READ_WRITE_MODE {READ_WRITE} \
     CONFIG.REG_AR {1} \
