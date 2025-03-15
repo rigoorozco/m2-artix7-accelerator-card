@@ -13,12 +13,18 @@ END_ADDR=0x2000
 # Size of file
 FILE_SIZE=4096
 
+# Input file
+INPUT_FILE=data/datafile0_4K.bin
+
+# Output file
+OUTPUT_FILE=data/output_datafile0_4K.bin
+
 #
 # NOTE:
 # These base addresses correspond to default DFX BDC
 #
 MM2S_BASE_ADDR=0x10000
-S2MM_BASE_ADDR=0x18000
+S2MM_BASE_ADDR=0x11000
 
 #
 # Configuration register offsets
@@ -43,7 +49,7 @@ OFFSET_STS_WORD=0x30
 
 ${SCRIPT_DIR}/../../xdma-tools/dma_to_device \
     -d /dev/xdma0_h2c_0 \
-    -f data/datafile0_4K.bin \
+    -f ${INPUT_FILE} \
     -s ${FILE_SIZE} \
     -a ${START_ADDR} \
     -c 1
@@ -128,7 +134,7 @@ ${SCRIPT_DIR}/../../xdma-tools/reg_rw /dev/xdma0_user \
 
 ${SCRIPT_DIR}/../../xdma-tools/dma_from_device \
     -d /dev/xdma0_c2h_0 \
-    -f data/output_datafile0_4K.bin \
+    -f ${OUTPUT_FILE} \
     -s ${FILE_SIZE} \
     -a ${END_ADDR} \
     -c 1
@@ -136,9 +142,10 @@ ${SCRIPT_DIR}/../../xdma-tools/dma_from_device \
 ################################
 # Compare files
 ################################
-RESULT=$(cmp data/datafile0_4K.bin data/output_datafile0_4K.bin)
+cmp ${INPUT_FILE} ${OUTPUT_FILE}
+RESULT=$?
 
-if (RESULT) then
+if [ ! ${RESULT} -eq 0 ]; then
     echo ""
     echo "DataMover test failed."
     exit 1
