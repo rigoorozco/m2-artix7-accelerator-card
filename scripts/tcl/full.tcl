@@ -32,6 +32,20 @@ if {${partition_bdc} != 0} {
     source ${current_directory}/${partition_bdc}
 }
 
+# Get path to all HDL sources
+set hdl_paths {}
+foreach source ${hdl_sources} {
+    lappend hdl_paths ${current_directory}/${source}
+}
+
+# Add hdl sources to the project
+if {[llength ${hdl_paths}] != 0} {
+    add_files ${hdl_paths}
+}
+
+# Update file compile order
+update_compile_order -fileset sources_1
+
 # Source block design tcl script
 source ${current_directory}/${block_design}
 
@@ -39,10 +53,10 @@ source ${current_directory}/${block_design}
 make_wrapper -top \
     -files [get_files ${proj_directory}/${proj_name}.srcs/sources_1/bd/${design_name}/${design_name}.bd]
 add_files -norecurse ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/hdl/${design_name}_wrapper.v
-set_property top ${proj_name}_wrapper [current_fileset]
+set_property top ${design_name}_wrapper [current_fileset]
 
-# Add hdl sources to the project
-add_files -quiet ${hdl_sources}
+# Update to set top and file compile order
+update_compile_order -fileset sources_1
 
 # Add pin constraints to the project
 foreach constr ${constraints} {
@@ -56,9 +70,6 @@ foreach constr ${constraints} {
 
 # Now import/copy the files into the project
 import_files -force
-
-# Update to set top and file compile order
-update_compile_order -fileset sources_1
 
 if { ${BUILD_STEP} > 0 } {
     # Launch Synthesis

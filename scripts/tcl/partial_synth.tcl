@@ -26,6 +26,20 @@ source ${current_directory}/project_config.tcl
 # Create the project and directory structure
 create_project -force ${proj_name} ${proj_directory} -part ${part_name}
 
+# Get path to all HDL sources
+set hdl_paths {}
+foreach source ${hdl_sources} {
+    lappend hdl_paths ${current_directory}/${source}
+}
+
+# Add hdl sources to the project
+if {[llength ${hdl_paths}] != 0} {
+    add_files ${hdl_paths}
+}
+
+# Update file compile order
+update_compile_order -fileset sources_1
+
 # Source DFX block design container
 source ${current_directory}/${DFX_BDC_TCL}
 
@@ -33,16 +47,13 @@ source ${current_directory}/${DFX_BDC_TCL}
 make_wrapper -top \
     -files [get_files ${proj_directory}/${proj_name}.srcs/sources_1/bd/${design_name}/${design_name}.bd]
 add_files -norecurse ${proj_directory}/${proj_name}.gen/sources_1/bd/${design_name}/hdl/${design_name}_wrapper.v
-set_property top ${proj_name}_wrapper [current_fileset]
+set_property top ${design_name}_wrapper [current_fileset]
 
-# Add hdl sources to the project
-add_files -quiet ${hdl_sources}
+# Update file compile order
+update_compile_order -fileset sources_1
 
 # Now import/copy the files into the project
 import_files -force
-
-# Update to set top and file compile order
-update_compile_order -fileset sources_1
 
 # Set as out of context
 set_property -name {STEPS.SYNTH_DESIGN.ARGS.MORE OPTIONS} -value {-mode out_of_context} -objects [get_runs synth_1]
