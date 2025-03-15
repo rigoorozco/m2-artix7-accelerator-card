@@ -15,3 +15,10 @@ set constraints {
 set partition_bdc dfx_block_designs/default.tcl
 set partition_cell xdma_ddr3_dfx_i/dfx_partition
 set partition_inst dfx_partition_inst_0
+
+set hdl_sources {
+    ../../hdl/common/up_axi.v \
+    ../../hdl/common/datamover_ctrl.v \
+    ../../hdl/datamover_mm2s_ctrl/axi_datamover_mm2s_ctrl.v \
+    ../../hdl/datamover_s2mm_ctrl/axi_datamover_s2mm_ctrl.v \
+}
