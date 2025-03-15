@@ -26,12 +26,6 @@ source ${current_directory}/project_config.tcl
 
 # Create the project and directory structure
 create_project -force ${proj_name} ${proj_directory} -part ${part_name}
-
-# Source DFX block design container if defined
-if {${partition_bdc} != 0} {
-    source ${current_directory}/${partition_bdc}
-}
-
 # Get path to all HDL sources
 set hdl_paths {}
 foreach source ${hdl_sources} {
@@ -41,6 +35,11 @@ foreach source ${hdl_sources} {
 # Add hdl sources to the project
 if {[llength ${hdl_paths}] != 0} {
     add_files ${hdl_paths}
+}
+
+# Source DFX block design container if defined
+if {${partition_bdc} != 0} {
+    source ${current_directory}/${partition_bdc}
 }
 
 # Update file compile order
