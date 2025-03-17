@@ -47,7 +47,7 @@ The magic happens in the way the second BD is instantiated. It uses what Xilinx 
 You can read about it here: \
 https://docs.amd.com/r/en-US/ug994-vivado-ip-subsystems/Introduction-to-Block-Design-Containers
 
-This allows you to fix the address ranges and the interfaces between the static and reconfigurable regions.
+This allows you to fix the address ranges and the interfaces between the static and reconfigurable region.
 
 The contents of the Reconfigurable Partition are somewhat unfinished here. Right now I have a Block RAM instantiated that I plan on using to test read/writes. There are also some Xilinx DataMovers I threw in there to take up space.
 
@@ -63,7 +63,7 @@ The first two projects are built using Vivado 2021.1. Running the following will
 ```bash
 source /opt/Xilinx/Vivado/2021.1/settings64.sh
 cd project/xdma_ddr3_dfx
-make
+make full
 ```
 ### xdma_ddr3_dfx
 
@@ -74,52 +74,32 @@ The last project is built using Vivado 2024.2 (it plays better with DFX):
 source /opt/Xilinx/Vivado/2024.2/settings64.sh
 ```
 
-#### Build Static and Reconfigurable Regions
+#### Build Static and Reconfigurable Region
 ```bash
-make
+make full
 ```
 This command will build the entire thing and provide you with the following:
-- Top-level bitstream (with RP)
+- Top-level bitstream (full bitstream)
 - Partial bitstream (only RP)
 - Routed checkpoint for the top-level
-- Sythesis checkpoint for RP
 - Timing and power reports
 
-#### Synthesizing the Reconfigurable Region
+#### Synthesizing and Implementing the Reconfigurable Region
 ```bash
-make synth_partitions
+make partial BDC=<DFX block design container>
 ```
-This command could use some work TBH. Currently it re-does the first half of the previous command ending with the synthesis checkpoint.
-
-What this does is synthesize the whole thing and the provide the checkpoint for the synthesized RP module. This is to ensure that all the connections with the static region are preserved. I tried synthesizing the RP module on its own, but I always get errors with the AXI bus signals not matching up when trying to place and route with the top-level's checkpoint.
-
-In theory, if you don't modify the top-level and keep its routed checkpoint, you shouldn't have any issues with RP being incompatible.
+The Block Design Container can be completely different than the one used by `make full`, as long as the interfaces remain constant. This is why I've made a `dfx_block_designs` directory.
 
 This command assumes you have exported the Block Design Container to TCL format. Run the following in Vivado to export TCL (make sure to only have the RP Block Design open):
 ```tcl
 validate_design
 write_bd_tcl -force -make_local -exclude_layout ../../xdma_ddr3_dfx_bdc.tcl
 ```
+Launches an out-of-context synthesis of the Reconfigurable Region's Block Design Container then runs implementation against routed checkpoint created with `make full`.
 
-Or, if you want to use the GUI, modify the block design and synthesize. Then create a synthesis checkpoint with something like the following:
-```tcl
-write_checkpoint -force -cell xdma_ddr3_dfx_i/dfx_partition ../reconfigurable/dfx_partition_inst_0_synth.dcp
-```
-
-The outputs of this step will be used for the next command.
-
-#### Implementing/Routing the Reconfigurable Region
-```bash
-make impl_partitions
-```
-This command takes the the routed static checkpoint and the synthesized reconfigurable checkpoint and builds the partial bitstream.
-
-It does so by taking the routed top-level checkpoint and replacing the Reconfigurable Partition with a grey-box. The grey-box is then replaced with checkpoint from the previous step. You can take a peek at the following script for more details: \
-`scripts/tcl/build_partitions.tcl`
+It does so by taking the routed top-level checkpoint and replacing the Reconfigurable Partition with a grey-box. The grey-box is then replaced with checkpoint from the previous step.
 
 Once done, it runs a check against the originally created checkpoint for compatibility using `pr_verify` and writing a bitstream when successful.
-
-**NOTE**: The checkpoint being verified against will be updated if you build the top-level again or when you run `make`, so be mindful of that.
 
 ## Other Notes
 
