@@ -37,27 +37,30 @@ The idea is you'd follow this sequence when reprogramming an RP:
 ## dfx_partition (Block Design Container)
 ![image info](.images/dfx_partition.png)
 
-**Note**: This portion is still under work.
-
-With that said, this should practically be a playground to do whatever you want. As long as you don't modify the interfaces going in and out of this block design container.
+This should practically be a playground to do whatever you want. As long as you don't modify the interfaces going in and out of this block design container.
 
 Important things to mention:
 - **Address Range**: the SmartConnect in the static region needs to be informed of the range the RP will need
     - Don't randomly address AXI mapped IPs
+    - Make sure address selected in RP are within the aperture configured in Static Region
+    - I've allocated the range 0x4001_0000 - 0x4001_FFFF (64 KB) in the default build so when an RP is built any address in that range can be used
 - **AXI Register Slices**: these serve the same purpose as those in `dfx_socket` and shall **always** match settings
     - Don't remove these or change their settings.
 
-### Future Plans
+### Current State
 
-Add the following:
-- MM2S DataMover control module
-- S2MM DataMover control module
-- Multiply-add module
+Includes the following:
+- MM2S DataMover and control module
+- S2MM DataMover and control module
+- AXI Stream FIFO
 
-With those a demo of the following could be made:
+With those a demo of the following is possible:
 - Write a buffer to DDR3 via PCIe
-- RP will read from DDR3 buffer and perform some operation on it
-- RP will write result to DDR3 buffer
+- MM2S DataMover will read from DDR3 buffer
+- AXI Stream FIFO forwards data
+- S2MM DataMover will write to DDR3 buffer
 - Read a buffer from DDR33 via PCIe
 
-Loads of hardware accelerated activities can be performed with these.
+This accomplishes a simple loopback test. This is done in `app/scripts/dma/test-datamover.sh`.
+
+Loads of hardware accelerated activities can be performed just by swapping out the FIFO.
