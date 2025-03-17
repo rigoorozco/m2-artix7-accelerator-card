@@ -5,9 +5,9 @@
 `timescale 1ns/100ps
 
 module axi_datamover_s2mm_ctrl #(
-    parameter DEFAULT_ENABLE = 1'b0,
-    parameter DEFAULT_ADDR   = 64'h0000_0000,
-    parameter DEFAULT_SIZE   = 23'h00_8000
+    parameter DEFAULT_ADDR   = 32'h0000_0000,
+    parameter DEFAULT_SIZE   = 32'h0000_8000,
+    parameter DEFAULT_BURST  = 32'h0000_1000
 ) (
     // axi interface
     input           s_axi_aclk,
@@ -120,9 +120,9 @@ up_axi i_up_axi (
 // datamover control
 
 datamover_ctrl #(
-    .DEFAULT_ENABLE (DEFAULT_ENABLE),
-    .DEFAULT_ADDR   (DEFAULT_ADDR),
-    .DEFAULT_SIZE   (DEFAULT_SIZE)
+    .DEFAULT_ADDR  (DEFAULT_ADDR),
+    .DEFAULT_SIZE  (DEFAULT_SIZE),
+    .DEFAULT_BURST (DEFAULT_BURST)
 ) ctrl (
     .up_clk            (up_clk),
     .up_rstn           (up_rstn),
