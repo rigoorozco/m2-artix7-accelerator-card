@@ -30,7 +30,7 @@ This is the most complex of the three projects and has more bells and whistles.
 | ✅ | XDMA/PCIe | Working. |
 | ✅ | MIG/DDR3 | Working. Tested using dma_from_device and dma_to_device. |
 | ✅ | HWICAP | Working. |
-| 🛠️ | Reconfig Partition | My plan here is to write some modules to control the DataMovers to copy to/from DDR. Then add some simple multiply/add operations to demostrate some sort of processing. Currently the DataMovers are just hanging out. |
+| ✅ | Reconfig Partition | Working. Tested with simple loopback using DataMovers. |
 
 #### Further Details on HWICAP
 
